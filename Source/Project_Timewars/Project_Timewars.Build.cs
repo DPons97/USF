@@ -12,6 +12,14 @@ public class Project_Timewars : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
+		PublicIncludePaths.AddRange(
+			new string[]
+			{
+				"Project_Timewars/Public/Player",
+				"Project_Timewars/Public/Pawns"
+			}
+		);
+
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		
