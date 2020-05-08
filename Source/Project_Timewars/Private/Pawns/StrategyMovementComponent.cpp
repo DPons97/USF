@@ -14,17 +14,17 @@ UStrategyMovementComponent::UStrategyMovementComponent()
 {
     // set defaults
     CameraXYLimit = FVector2D(25000.f, 25000.f);
-    CameraHeight = 2500.f;                    
-    CameraHeightMin = 300.f;                // 100 for debugging
-    CameraHeightMax = 5000.f;
+    CameraHeight = 4500.f;                    
+    CameraHeightMin = 1000.f;                // 100 for debugging
+    CameraHeightMax = 6000.f;
 
-    CameraRadius = 3800.f;                    
-    CameraRadiusMin = 1000.f;                // 100 for debugging
-    CameraRadiusMax = 8000.f;                
+    CameraRadius = 8000.f;                    
+    CameraRadiusMin = 2500.f;                // 100 for debugging
+    CameraRadiusMax = 10000.f;                
 
     CameraZAngle = 0.f;                        // yaw
 
-    CameraHeightAngle = 45.f;                // pitch
+    CameraHeightAngle = 50.f;                // pitch
     CameraHeightAngleMin = 15.f;
     CameraHeightAngleMax = 60.f;
 
@@ -271,8 +271,6 @@ void UStrategyMovementComponent::MoveCameraForwardInput(float Direction)
 {
     if (!bCanMoveCamera) return;
 
-    UE_LOG(LogTemp, Warning, TEXT("Ciao!"))
-
     MoveForwardValue = Direction;
 }
 
@@ -391,7 +389,7 @@ float UStrategyMovementComponent::GetLandTerrainSurfaceAtCoord(float XCoord, flo
     FVector Start = FVector(XCoord, YCoord, Owner->GetActorLocation().Z + CameraRadius);
     FVector End = FVector(XCoord, YCoord, -500.f);
 
-    // ECC_ channels should be set properly !!!
+    // todo: ECC_ channels should be set properly !!!
     bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldStatic, TraceParams);
 
     if (bHit)
