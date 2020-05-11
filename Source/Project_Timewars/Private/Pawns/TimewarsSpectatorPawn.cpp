@@ -9,6 +9,7 @@
 #include "Components/SphereComponent.h"
 #include "Engine/World.h"
 #include "Pawns/StrategyMovementComponent.h"
+#include "Pawns/StrategySelectionComponent.h"
 
 
 ATimewarsSpectatorPawn::ATimewarsSpectatorPawn(const FObjectInitializer& ObjectInitializer)
@@ -37,6 +38,9 @@ ATimewarsSpectatorPawn::ATimewarsSpectatorPawn(const FObjectInitializer& ObjectI
     CameraComponent->bUsePawnControlRotation = false;
 
     Cast<UStrategyMovementComponent>(MovementComponent)->SetCameraComponent(CameraComponent);
+
+    // Init selection handler
+    SelectionComponent = ObjectInitializer.CreateDefaultSubobject<UStrategySelectionComponent>(this, TEXT("StrategySelectionComponent"));
 }
 
 
@@ -69,6 +73,9 @@ void ATimewarsSpectatorPawn::SetupPlayerInputComponent(UInputComponent* PlayerIn
     PlayerInputComponent->BindAxis("FastMove", this, &ATimewarsSpectatorPawn::FastMoveInput);
     // yaw and pitch (WASD +Ctrl)
     PlayerInputComponent->BindAxis("Rotate", this, &ATimewarsSpectatorPawn::RotateInput);
+
+    // Right / Left click
+    PlayerInputComponent->BindAction("MouseLeft", IE_Released, this, &ATimewarsSpectatorPawn::SelectUnit);
 }
 
 void ATimewarsSpectatorPawn::Tick(float DeltaSeconds)
@@ -76,6 +83,10 @@ void ATimewarsSpectatorPawn::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);    
 }
 
+void ATimewarsSpectatorPawn::SelectUnit()
+{
+    SelectionComponent->SelectUnit();    
+}
 
 void ATimewarsSpectatorPawn::ZoomIn()
 {

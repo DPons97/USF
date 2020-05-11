@@ -18,6 +18,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class UCameraComponent* CameraComponent;
 
+	// Selection component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
+    class UStrategySelectionComponent* SelectionComponent;
+
 	//------------------------------------
 	
 	/** Tick Function, handles keyboard inputs */
@@ -28,7 +32,8 @@ protected:
 	
 	
 private:
-
+	void SelectUnit();
+	
     /** Sets up player inputs
     *    @param InputComponent - Input Component
     */

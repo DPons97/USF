@@ -14,13 +14,13 @@ UStrategyMovementComponent::UStrategyMovementComponent()
 {
     // set defaults
     CameraXYLimit = FVector2D(25000.f, 25000.f);
-    CameraHeight = 4500.f;                    
-    CameraHeightMin = 1000.f;                // 100 for debugging
-    CameraHeightMax = 6000.f;
+    CameraHeight = 1000.f;                    
+    CameraHeightMin = 500.f;                // 100 for debugging
+    CameraHeightMax = 4000.f;
 
-    CameraRadius = 8000.f;                    
-    CameraRadiusMin = 2500.f;                // 100 for debugging
-    CameraRadiusMax = 10000.f;                
+    CameraRadius = 2000.f;                    
+    CameraRadiusMin = 1000.f;                // 100 for debugging
+    CameraRadiusMax = 5000.f;                
 
     CameraZAngle = 0.f;                        // yaw
 
@@ -390,7 +390,7 @@ float UStrategyMovementComponent::GetLandTerrainSurfaceAtCoord(float XCoord, flo
     FVector End = FVector(XCoord, YCoord, -500.f);
 
     // todo: ECC_ channels should be set properly !!!
-    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldStatic, TraceParams);
+    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_Camera, TraceParams);
 
     if (bHit)
     {
