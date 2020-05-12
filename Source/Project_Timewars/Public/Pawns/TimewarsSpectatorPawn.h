@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "StrategyMovementComponent.h"
 #include "GameFramework/SpectatorPawn.h"
 #include "TimewarsSpectatorPawn.generated.h"
 
@@ -32,7 +33,9 @@ protected:
 	
 	
 private:
-	void SelectUnit();
+	void EndSelection();
+
+	void StartSelection();
 	
     /** Sets up player inputs
     *    @param InputComponent - Input Component

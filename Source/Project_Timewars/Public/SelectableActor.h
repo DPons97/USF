@@ -17,11 +17,16 @@ public:
 
 	void SetActorSelected(bool isSelected);
 
-	bool IsSelected();
+	void SetActorPreSelected(bool isPreSelected) const;
+
+	bool IsSelected() const;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     class UStaticMeshComponent* SelectionCircle;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    class UStaticMeshComponent* PreSelectionCircle;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     class USceneComponent* DefaultSceneComponent;
 

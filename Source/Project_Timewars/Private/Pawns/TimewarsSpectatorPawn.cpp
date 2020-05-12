@@ -75,7 +75,8 @@ void ATimewarsSpectatorPawn::SetupPlayerInputComponent(UInputComponent* PlayerIn
     PlayerInputComponent->BindAxis("Rotate", this, &ATimewarsSpectatorPawn::RotateInput);
 
     // Right / Left click
-    PlayerInputComponent->BindAction("MouseLeft", IE_Released, this, &ATimewarsSpectatorPawn::SelectUnit);
+    PlayerInputComponent->BindAction("MouseLeft", IE_Pressed, this, &ATimewarsSpectatorPawn::StartSelection);
+    PlayerInputComponent->BindAction("MouseLeft", IE_Released, this, &ATimewarsSpectatorPawn::EndSelection);
 }
 
 void ATimewarsSpectatorPawn::Tick(float DeltaSeconds)
@@ -83,9 +84,14 @@ void ATimewarsSpectatorPawn::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);    
 }
 
-void ATimewarsSpectatorPawn::SelectUnit()
+void ATimewarsSpectatorPawn::EndSelection()
 {
-    SelectionComponent->SelectUnit();    
+    SelectionComponent->EndSelection();    
+}
+
+void ATimewarsSpectatorPawn::StartSelection()
+{
+    SelectionComponent->StartSelection();
 }
 
 void ATimewarsSpectatorPawn::ZoomIn()

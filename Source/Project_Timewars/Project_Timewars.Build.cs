@@ -16,7 +16,8 @@ public class Project_Timewars : ModuleRules
 			new string[]
 			{
 				"Project_Timewars/Public/Player",
-				"Project_Timewars/Public/Pawns"
+				"Project_Timewars/Public/Pawns",
+				"Project_Timewars/Public/UI"
 			}
 		);
 

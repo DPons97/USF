@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SelectableActor.h"
+#include "StrategyHUD.h"
 #include "Components/ActorComponent.h"
 #include "StrategySelectionComponent.generated.h"
 
@@ -17,16 +18,16 @@ class PROJECT_TIMEWARS_API UStrategySelectionComponent : public UActorComponent
 
 
 public:
-    UStrategySelectionComponent();
-
-    void SelectUnit();
-    
-protected:
-    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction * ThisTickFunction);
+	UStrategySelectionComponent();
 	
-	void ResetSelection();
+    void EndSelection();
 
-	void MakeSelection(TArray<AActor*> outActors);
+	void StartSelection();
+
+protected:
+	void BeginPlay() override;
+	
+    virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction * ThisTickFunction);
 
 	/*
      * Maximum approximation to select an actor
@@ -35,7 +36,28 @@ protected:
     float MaxSelectionApprox = 30.f;
     
 private:
-	TArray<ASelectableActor*> SelectedActors; 
+	bool GetMousePosition(FVector2D &outMousePosition);
 	
-    
+	bool DeprojectPositionToWorld(FVector2D position, FVector &outWorldPosition);
+
+	TArray<ASelectableActor*> MakeSingleSelection();
+	
+	TArray<ASelectableActor*> MakeMultipleSelection();
+
+	void ResetSelection();
+
+	void SelectActors(TArray<ASelectableActor*> selectedActors);
+
+	APlayerController* PlayerController;
+
+	AStrategyHUD* HUD;
+	
+	TArray<ASelectableActor*> SelectedActors; 
+
+	bool isSelecting;
+
+	// Storing starting and ending selection points
+	FVector2D SelectionStartPoint;
+
+	FVector2D SelectionEndPoint;
 };
