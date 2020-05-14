@@ -19,7 +19,6 @@ public:
 	
 	void EndSelection();
 
-	bool DrawSelectionBox();
 	void DrawHUD() override;
 
 	TArray<class ASelectableActor*> GetCurrentSelection();
@@ -32,6 +31,10 @@ protected:
 	
 private:
 	bool GetMousePosition(FVector2D& MousePosition);
+
+	void DrawSelectionBox();
+	
+	void DrawSelection();
 	
 	bool isSelecting = false;
 

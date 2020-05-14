@@ -17,6 +17,7 @@ public class Project_Timewars : ModuleRules
 			{
 				"Project_Timewars/Public/Player",
 				"Project_Timewars/Public/Pawns",
+				"Project_Timewars/Public/Selectables",
 				"Project_Timewars/Public/UI"
 			}
 		);

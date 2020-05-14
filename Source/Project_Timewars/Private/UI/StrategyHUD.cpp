@@ -5,41 +5,13 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "SelectableActor.h"
-
-
-
+#include "TimewarsPlayerController.h"
 
 void AStrategyHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
-	// Draw selection box
-	if (isSelecting)
-	{
-		// Compute position
-		if (!GetMousePosition(SelectionEndPoint)) return;
-		
-		DrawSelectionBox();
-		for (auto a : LastSelection)
-		{
-			a->SetActorPreSelected(false);
-		}
-		LastSelection.Empty();		
-		GetActorsInSelectionRectangle<ASelectableActor>(
-			SelectionStartPoint,
-			SelectionEndPoint,
-			LastSelection,
-			true,
-			false
-			);
-
-		for (auto a : LastSelection)
-		{
-			a->SetActorPreSelected(true);
-		}
-		
-		// UE_LOG(LogTemp, Warning, TEXT("Selected actors: %d"), LastSelection.Num())
-	}
+	DrawSelection();
 }
 
 void AStrategyHUD::StartSelection()
@@ -59,7 +31,7 @@ void AStrategyHUD::EndSelection()
 
 bool AStrategyHUD::GetMousePosition(FVector2D& MousePosition)
 {
-	const auto PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	const auto PlayerController = Cast<ATimewarsPlayerController>(PlayerOwner);
 	if (!ensure(PlayerController != nullptr)) return false;
 
 	float mouseX, mouseY;
@@ -78,7 +50,38 @@ TArray<ASelectableActor*> AStrategyHUD::GetCurrentSelection()
 	return LastSelection;
 }
 
-bool AStrategyHUD::DrawSelectionBox()
+void AStrategyHUD::DrawSelection()
+{
+	// Draw selection box
+	if (isSelecting)
+	{
+		// Compute position
+		if (!GetMousePosition(SelectionEndPoint)) return;
+		
+		DrawSelectionBox();
+		for (auto a : LastSelection)
+		{
+			a->SetActorPreSelected(false);
+		}
+		LastSelection.Empty();		
+		GetActorsInSelectionRectangle<ASelectableActor>(
+            SelectionStartPoint,
+            SelectionEndPoint,
+            LastSelection,
+            true,
+            false
+        );
+
+		for (auto a : LastSelection)
+		{
+			a->SetActorPreSelected(true);
+		}
+		
+		// UE_LOG(LogTemp, Warning, TEXT("Selected actors: %d"), LastSelection.Num())
+	}
+}
+
+void AStrategyHUD::DrawSelectionBox()
 {
 	DrawLine(
         SelectionStartPoint.X,
@@ -115,6 +118,4 @@ bool AStrategyHUD::DrawSelectionBox()
         FLinearColor::Green,
         SelectionBorderThickness
     );
-
-	return false;
 }

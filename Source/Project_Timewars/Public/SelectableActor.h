@@ -2,8 +2,13 @@
 
 #pragma once
 
+#include "StrategyUtils.h"
+
 #include "CoreMinimal.h"
+#include "TimewarsPlayerController.h"
 #include "GameFramework/Actor.h"
+#include "UObject/ObjectMacros.h"
+
 #include "SelectableActor.generated.h"
 
 UCLASS()
@@ -21,20 +26,29 @@ public:
 
 	bool IsSelected() const;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    class UStaticMeshComponent* SelectionCircle;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    class UStaticMeshComponent* PreSelectionCircle;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    class USceneComponent* DefaultSceneComponent;
+	TEnumAsByte<ETeam::Type> GetOwningTeam() const;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    class USceneComponent* DefaultSceneComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    class UStaticMeshComponent* ActorMesh;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    class UStaticMeshComponent* SelectionCircle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* PreSelectionCircle;
+
+	UPROPERTY(EditDefaultsOnly)
+	FSelectableData ActorData;
+
+	TEnumAsByte<ETeam::Type> OwningTeam = ETeam::UNDEFINED;
+private:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

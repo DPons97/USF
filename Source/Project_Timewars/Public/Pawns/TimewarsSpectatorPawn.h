@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "StrategyUtils.h"
+
 #include "CoreMinimal.h"
 #include "StrategyMovementComponent.h"
 #include "GameFramework/SpectatorPawn.h"
@@ -84,4 +86,6 @@ private:
 	/** Zooms Out The Camera */
 	void ZoomOut();
 
+	/* Player infos */
+	FPlayerData PlayerData;
 };

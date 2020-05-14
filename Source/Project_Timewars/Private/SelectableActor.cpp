@@ -15,20 +15,36 @@ ASelectableActor::ASelectableActor()
 	
 	DefaultSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootScene"));
 	RootComponent = DefaultSceneComponent;
-	
+
+	ActorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ActorMesh"));
+	ActorMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	// Set the right selection and pre-selection circle color
 	SelectionCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionCircle"));
-	SelectionCircle->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	SelectionCircle->AttachToComponent(ActorMesh, FAttachmentTransformRules::KeepRelativeTransform);
 
 	PreSelectionCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PreSelectionCircle"));
-	PreSelectionCircle->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>SelectionCircleMesh(TEXT("StaticMesh'/Game/UI/S_SelectionCircle.S_SelectionCircle'"));
-	if (!ensure(SelectionCircleMesh.Object != nullptr)) return;
+	PreSelectionCircle->AttachToComponent(ActorMesh, FAttachmentTransformRules::KeepRelativeTransform);
+	
+	TCHAR* SelectionCirclePath;
+	TCHAR* PreselectionCirclePath; 
+	if (OwningTeam == ETeam::Zombie)
+	{
+		SelectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_EnemySlectionCircle.S_EnemySlectionCircle'");
+		PreselectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_EnemyPreSelection.S_EnemyPreSelection'");
+	} else
+	{
+		SelectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_SelectionCircle.S_SelectionCircle'");
+		PreselectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_PreSelectionCircle.S_PreSelectionCircle'");
+	}
+	
+	static ConstructorHelpers::FObjectFinder<UStaticMesh>SelectionCircleMesh(SelectionCirclePath);
+	if (!ensure(SelectionCircleMesh.Object != nullptr)) return;	
 	SelectionCircle->SetStaticMesh(SelectionCircleMesh.Object);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>PreSelectionMesh(TEXT("StaticMesh'/Game/UI/S_PreSelectionCircle.S_PreSelectionCircle'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh>PreSelectionMesh(PreselectionCirclePath);
 	if (!ensure(PreSelectionMesh.Object != nullptr)) return;
-	PreSelectionCircle->SetStaticMesh(PreSelectionMesh.Object);	
+	PreSelectionCircle->SetStaticMesh(PreSelectionMesh.Object);
 
 	SetActorSelected(false);
 }
@@ -38,7 +54,9 @@ void ASelectableActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-		
+	// Set current data values to default
+	ActorData.Health = ActorData.MaxHealth;
+	ActorData.Speed = ActorData.MaxSpeed;
 }
 
 // Called every frame
@@ -63,4 +81,9 @@ void ASelectableActor::SetActorPreSelected(bool isPreSelected) const
 bool ASelectableActor::IsSelected() const
 {
 	return Selected;
+}
+
+TEnumAsByte<ETeam::Type> ASelectableActor::GetOwningTeam() const
+{
+	return OwningTeam;
 }
