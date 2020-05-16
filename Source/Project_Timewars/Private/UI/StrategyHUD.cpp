@@ -5,7 +5,12 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "SelectableActor.h"
-#include "TimewarsPlayerController.h"
+#include "Project_Timewars/Public/StrategyHelpers.h"
+
+AStrategyHUD::AStrategyHUD()
+{
+	
+}
 
 void AStrategyHUD::DrawHUD()
 {
@@ -17,7 +22,7 @@ void AStrategyHUD::DrawHUD()
 void AStrategyHUD::StartSelection()
 {
 	FVector2D MousePosition;
-	if (!GetMousePosition(MousePosition)) return;
+	if (!StrategyHelpers::GetMousePosition(MousePosition, GetOwningPlayerController())) return;
 
 	SelectionStartPoint = MousePosition;
 	isSelecting = true;
@@ -27,22 +32,6 @@ void AStrategyHUD::EndSelection()
 {
 	LastSelection.Empty();
 	isSelecting = false;
-}
-
-bool AStrategyHUD::GetMousePosition(FVector2D& MousePosition)
-{
-	const auto PlayerController = Cast<ATimewarsPlayerController>(PlayerOwner);
-	if (!ensure(PlayerController != nullptr)) return false;
-
-	float mouseX, mouseY;
-	if (!PlayerController->GetMousePosition(mouseX, mouseY))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Unable to get mouse position"));
-		return false;
-	}
-	
-	MousePosition = FVector2D(mouseX, mouseY);
-	return true;
 }
 
 TArray<ASelectableActor*> AStrategyHUD::GetCurrentSelection()
@@ -56,7 +45,7 @@ void AStrategyHUD::DrawSelection()
 	if (isSelecting)
 	{
 		// Compute position
-		if (!GetMousePosition(SelectionEndPoint)) return;
+		if (!StrategyHelpers::GetMousePosition(SelectionEndPoint, GetOwningPlayerController())) return;
 		
 		DrawSelectionBox();
 		for (auto a : LastSelection)

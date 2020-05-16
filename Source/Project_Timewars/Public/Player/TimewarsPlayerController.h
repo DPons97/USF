@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SelectableActor.h"
+#include "TimewarsSpectatorPawn.h"
 #include "GameFramework/PlayerController.h"
 #include "TimewarsPlayerController.generated.h"
 
@@ -16,9 +18,21 @@ class PROJECT_TIMEWARS_API ATimewarsPlayerController : public APlayerController
 
 public:
 	ATimewarsPlayerController();
+	
+protected:
+	virtual void BeginPlay() override;
+	
+	void SetupInputComponent() override;
 
-protected:    
-	
+	// Selection component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
+    class UStrategySelectionComponent* SelectionComponent;
 private:
+	void EndSelection();
+
+	void StartSelection();
 	
+	void GiveMovementOrder();
+	
+	ATimewarsSpectatorPawn* TimewarsPawn;
 };

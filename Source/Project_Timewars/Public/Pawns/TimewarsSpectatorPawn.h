@@ -17,13 +17,20 @@ class PROJECT_TIMEWARS_API ATimewarsSpectatorPawn : public ASpectatorPawn
 {
 	GENERATED_UCLASS_BODY()
 public:
+	void StartSelection();
+
+	void EndSelection();
+
+	void FireMovementPing();
+	
 	// Camera component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class UCameraComponent* CameraComponent;
 
-	// Selection component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-    class UStrategySelectionComponent* SelectionComponent;
+	class UAnimSequence* MovementArrowAnimSequence;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Selection)
+	class USkeletalMeshComponent* MovementArrowSkeletalMeshComponent;
 
 	//------------------------------------
 	
@@ -33,12 +40,7 @@ public:
 protected:
 	
 	
-	
 private:
-	void EndSelection();
-
-	void StartSelection();
-	
     /** Sets up player inputs
     *    @param InputComponent - Input Component
     */
@@ -85,7 +87,4 @@ private:
 
 	/** Zooms Out The Camera */
 	void ZoomOut();
-
-	/* Player infos */
-	FPlayerData PlayerData;
 };

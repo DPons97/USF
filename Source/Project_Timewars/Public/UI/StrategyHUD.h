@@ -27,11 +27,9 @@ public:
 	float SelectionBorderThickness = 1.f;
 
 protected:
-
+	AStrategyHUD();
 	
 private:
-	bool GetMousePosition(FVector2D& MousePosition);
-
 	void DrawSelectionBox();
 	
 	void DrawSelection();

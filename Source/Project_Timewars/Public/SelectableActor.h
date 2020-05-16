@@ -5,9 +5,7 @@
 #include "StrategyUtils.h"
 
 #include "CoreMinimal.h"
-#include "TimewarsPlayerController.h"
 #include "GameFramework/Actor.h"
-#include "UObject/ObjectMacros.h"
 
 #include "SelectableActor.generated.h"
 

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SelectableActor.h"
 #include "StrategyHUD.h"
 #include "Components/ActorComponent.h"
 #include "StrategySelectionComponent.generated.h"
@@ -36,10 +35,6 @@ protected:
     float MaxSelectionApprox = 30.f;
     
 private:
-	bool GetMousePosition(FVector2D &outMousePosition);
-	
-	bool DeprojectPositionToWorld(FVector2D position, FVector &outWorldPosition);
-
 	TArray<ASelectableActor*> MakeSingleSelection();
 	
 	TArray<ASelectableActor*> MakeMultipleSelection();
@@ -51,8 +46,8 @@ private:
 	APlayerController* PlayerController;
 
 	AStrategyHUD* HUD;
-	
-	TArray<ASelectableActor*> SelectedActors; 
+
+	TArray<ASelectableActor*> SelectedActors;
 
 	bool isSelecting;
 
