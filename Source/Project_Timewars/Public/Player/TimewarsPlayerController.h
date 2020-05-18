@@ -27,6 +27,9 @@ protected:
 	// Selection component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
     class UStrategySelectionComponent* SelectionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Selection)
+    class AMovementArrowActor* MovementArrowActor;
 private:
 	void EndSelection();
 

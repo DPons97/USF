@@ -2,20 +2,19 @@
 
 
 #include "TimewarsSpectatorPawn.h"
-
-
+#include "Animation/SkeletalMeshActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Project_Timewars/Public/StrategyHelpers.h"
-#include "UObject/ConstructorHelpers.h"
 
 
 ATimewarsSpectatorPawn::ATimewarsSpectatorPawn(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<UStrategyMovementComponent>(Super::MovementComponentName))
-{    
+{
+    StrategyMovementComponent = Cast<UStrategyMovementComponent>(MovementComponent);
+    
     // enable Tick function
     PrimaryActorTick.bCanEverTick = true;
 
@@ -38,21 +37,19 @@ ATimewarsSpectatorPawn::ATimewarsSpectatorPawn(const FObjectInitializer& ObjectI
     CameraComponent->SetupAttachment(RootComponent);
     CameraComponent->bUsePawnControlRotation = false;
 
-    Cast<UStrategyMovementComponent>(MovementComponent)->SetCameraComponent(CameraComponent);
-
-    // Setup movement arrow animations
-    MovementArrowSkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MovementArrowComponent"));
-    MovementArrowSkeletalMeshComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
-    
-    static ConstructorHelpers::FObjectFinder<UAnimSequence>ArrowAnimSeq(TEXT("AnimSequence'/Game/Resources/Selection/MovementArrow/MovementArrow_Anim.MovementArrow_Anim'"));
-    if (!ensure(ArrowAnimSeq.Object != nullptr)) return;	
-    MovementArrowAnimSequence = ArrowAnimSeq.Object;
-
-    static ConstructorHelpers::FObjectFinder<USkeletalMesh>ArrowSkeletalMesh(TEXT("SkeletalMesh'/Game/Resources/Selection/MovementArrow/MovementArrow.MovementArrow'"));
-    if (!ensure(ArrowSkeletalMesh.Object != nullptr)) return;	
-    MovementArrowSkeletalMeshComponent->SetSkeletalMesh(ArrowSkeletalMesh.Object);
+    StrategyMovementComponent->SetCameraComponent(CameraComponent);
 }
 
+
+void ATimewarsSpectatorPawn::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);    
+}
+
+void ATimewarsSpectatorPawn::BeginPlay()
+{
+    Super::BeginPlay();
+}
 
 void ATimewarsSpectatorPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -90,7 +87,7 @@ void ATimewarsSpectatorPawn::StartSelection()
     // Block camera from moving
     if (MovementComponent == nullptr) return;
     
-    Cast<UStrategyMovementComponent>(MovementComponent)->bCanMoveCamera = false;
+    Cast<UStrategyMovementComponent>(StrategyMovementComponent)->bCanMoveCamera = false;
     
 }
 
@@ -99,87 +96,68 @@ void ATimewarsSpectatorPawn::EndSelection()
     // Block camera from moving
     if (MovementComponent == nullptr) return;
     
-    Cast<UStrategyMovementComponent>(MovementComponent)->bCanMoveCamera = true;
-}
-
-void ATimewarsSpectatorPawn::FireMovementPing()
-{
-    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0); 
-    
-    FVector2D MousePosition;
-    StrategyHelpers::GetMousePosition(MousePosition, PC);
-
-    FVector MouseToWorld;
-    StrategyHelpers::DeprojectPositionToWorld(MousePosition, MouseToWorld, PC);
-
-    MovementArrowSkeletalMeshComponent->SetWorldLocation(MouseToWorld);
-    MovementArrowSkeletalMeshComponent->PlayAnimation(MovementArrowAnimSequence, false);
-}
-
-void ATimewarsSpectatorPawn::Tick(float DeltaSeconds)
-{
-    Super::Tick(DeltaSeconds);    
+    StrategyMovementComponent->bCanMoveCamera = true;
 }
 
 void ATimewarsSpectatorPawn::ZoomIn()
 {
     if (MovementComponent == nullptr) return;
     
-    Cast<UStrategyMovementComponent>(MovementComponent)->ZoomIn();
+    StrategyMovementComponent->ZoomIn();
 }
 
 void ATimewarsSpectatorPawn::ZoomOut()
 {
     if (MovementComponent == nullptr) return;
     
-    Cast<UStrategyMovementComponent>(MovementComponent)->ZoomOut();
+    StrategyMovementComponent->ZoomOut();
 }
 
 void ATimewarsSpectatorPawn::ZoomCameraInInput(float Direction)
 {
     if (MovementComponent == nullptr) return;
     
-    Cast<UStrategyMovementComponent>(MovementComponent)->ZoomCameraInInput(Direction);
+    StrategyMovementComponent->ZoomCameraInInput(Direction);
 }
 
 void ATimewarsSpectatorPawn::FastMoveInput(float Direction)
 {
     if (MovementComponent == nullptr) return;
-    Cast<UStrategyMovementComponent>(MovementComponent)->FastMoveInput(Direction);
+    StrategyMovementComponent->FastMoveInput(Direction);
 }
 
 void ATimewarsSpectatorPawn::RotateInput(float Direction)
 {
     if (MovementComponent == nullptr) return;
-    Cast<UStrategyMovementComponent>(MovementComponent)->RotateInput(Direction);
+    StrategyMovementComponent->RotateInput(Direction);
 }
 
 void ATimewarsSpectatorPawn::MoveCameraForwardInput(float Direction)
 {
     if (MovementComponent == nullptr) return;
-    Cast<UStrategyMovementComponent>(MovementComponent)->MoveCameraForwardInput(Direction);
+    StrategyMovementComponent->MoveCameraForwardInput(Direction);
 }
 
 void ATimewarsSpectatorPawn::MoveCameraRightInput(float Direction)
 {
     if (MovementComponent == nullptr) return;
-    Cast<UStrategyMovementComponent>(MovementComponent)->MoveCameraRightInput(Direction);
+    StrategyMovementComponent->MoveCameraRightInput(Direction);
 }
 
 void ATimewarsSpectatorPawn::MoveCameraUpInput(float Direction)
 {
     if (MovementComponent == nullptr) return;
-    Cast<UStrategyMovementComponent>(MovementComponent)->MoveCameraUpInput(Direction);
+    StrategyMovementComponent->MoveCameraUpInput(Direction);
 }
 
 void ATimewarsSpectatorPawn::RotateUp()
 {
     if (MovementComponent == nullptr) return;
-    Cast<UStrategyMovementComponent>(MovementComponent)->RotateUp();
+    StrategyMovementComponent->RotateUp();
 }
 
 void ATimewarsSpectatorPawn::RotateDown()
 {
     if (MovementComponent == nullptr) return;
-    Cast<UStrategyMovementComponent>(MovementComponent)->RotateDown();
+    StrategyMovementComponent->RotateDown();
 }

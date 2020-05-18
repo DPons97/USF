@@ -3,9 +3,10 @@
 
 #include "StrategyHUD.h"
 
-#include "Kismet/GameplayStatics.h"
-#include "SelectableActor.h"
-#include "Project_Timewars/Public/StrategyHelpers.h"
+#include "BuildingActor.h"
+#include "UnitActor.h"
+#include "ResourceActor.h"
+#include "StrategyHelpers.h"
 
 AStrategyHUD::AStrategyHUD()
 {
@@ -50,23 +51,69 @@ void AStrategyHUD::DrawSelection()
 		DrawSelectionBox();
 		for (auto a : LastSelection)
 		{
-			a->SetActorPreSelected(false);
+			Cast<IStrategySelectionInterface>(a)->SetActorPreSelected(false);
 		}
-		LastSelection.Empty();		
-		GetActorsInSelectionRectangle<ASelectableActor>(
+		
+		LastSelection.Empty();
+
+		// First, select units
+		TArray<AUnitActor*> SelectedUnits;
+		GetActorsInSelectionRectangle<AUnitActor>(
             SelectionStartPoint,
             SelectionEndPoint,
-            LastSelection,
+            SelectedUnits,
             true,
             false
         );
 
-		for (auto a : LastSelection)
+		if (SelectedUnits.Num() > 0)
 		{
-			a->SetActorPreSelected(true);
+			ConfirmSelection<AUnitActor>(SelectedUnits);
+			return;
+		}
+
+		// If no units inside selection rectangle, search for buildings
+		TArray<ABuildingActor*> SelectedBuildings;
+		GetActorsInSelectionRectangle<ABuildingActor>(
+            SelectionStartPoint,
+            SelectionEndPoint,
+            SelectedBuildings,
+            true,
+            false
+        );
+
+		if (SelectedBuildings.Num() > 0)
+		{
+			ConfirmSelection<ABuildingActor>(SelectedBuildings);
+			return;
+		}
+
+		// If no units nor buildings inside selection rectangle, try resources
+		TArray<AResourceActor*> SelectedResources;
+		GetActorsInSelectionRectangle<AResourceActor>(
+            SelectionStartPoint,
+            SelectionEndPoint,
+            SelectedResources,
+            true,
+            false
+        );
+
+		if (SelectedResources.Num() > 0)
+		{
+			ConfirmSelection<AResourceActor>(SelectedResources);
 		}
 		
 		// UE_LOG(LogTemp, Warning, TEXT("Selected actors: %d"), LastSelection.Num())
+	}
+}
+
+template<typename T>
+void AStrategyHUD::ConfirmSelection(TArray<T*> SelectedUnits)
+{
+	for (auto a : SelectedUnits)
+	{
+		LastSelection.Add(a);
+		a->SetActorPreSelected(true);
 	}
 }
 

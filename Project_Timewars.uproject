@@ -1,24 +1,3 @@
-{
-	"FileVersion": 3,
-	"EngineAssociation": "4.24",
-	"Category": "",
-	"Description": "",
-	"Modules": [
-		{
-			"Name": "Project_Timewars",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"CoreUObject"
-			]
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "RiderSourceCodeAccess",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/35b0d39e4cee4bccb2dabf04a4c911bb"
-		}
-	]
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:47117428b95b4ce663f06e74f9c2fc36e4312f6315e6a2adba8dc542fd3f5f29
+size 491

@@ -8,7 +8,12 @@ ABuildingActor::ABuildingActor()
 	ActorData.ActorType = EActorType::Building;
 }
 
-void ABuildingActor::LeftMouse(FVector ClickPosition)
+void ABuildingActor::Move(FVector ClickPosition)
+{
+	
+}
+
+void ABuildingActor::BeginPlay()
 {
 	
 }

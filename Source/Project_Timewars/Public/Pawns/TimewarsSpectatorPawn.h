@@ -20,17 +20,10 @@ public:
 	void StartSelection();
 
 	void EndSelection();
-
-	void FireMovementPing();
 	
 	// Camera component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class UCameraComponent* CameraComponent;
-
-	class UAnimSequence* MovementArrowAnimSequence;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Selection)
-	class USkeletalMeshComponent* MovementArrowSkeletalMeshComponent;
 
 	//------------------------------------
 	
@@ -38,9 +31,11 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	
 protected:
-	
+	void BeginPlay() override;
 	
 private:
+	UStrategyMovementComponent* StrategyMovementComponent;
+	
     /** Sets up player inputs
     *    @param InputComponent - Input Component
     */

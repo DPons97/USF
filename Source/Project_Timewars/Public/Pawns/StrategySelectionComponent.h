@@ -35,7 +35,7 @@ protected:
     float MaxSelectionApprox = 30.f;
     
 private:
-	TArray<ASelectableActor*> MakeSingleSelection();
+	TArray<class ASelectableActor*> MakeSingleSelection();
 	
 	TArray<ASelectableActor*> MakeMultipleSelection();
 
@@ -47,6 +47,7 @@ private:
 
 	AStrategyHUD* HUD;
 
+	/* Array of last selection. Actors in this array always implement IStrategySelectionInterface */
 	TArray<ASelectableActor*> SelectedActors;
 
 	bool isSelecting;

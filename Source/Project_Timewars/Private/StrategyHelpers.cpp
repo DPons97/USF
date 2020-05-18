@@ -28,14 +28,14 @@ bool StrategyHelpers::GetMousePosition(FVector2D &outMousePosition, APlayerContr
     return true;
 }
 
-bool StrategyHelpers::DeprojectPositionToWorld(FVector2D position, FVector &outWorldPosition, APlayerController* PlayerController)
+bool StrategyHelpers::DeprojectPositionToWorld(FVector2D position, FVector &outWorldPosition, APlayerController* PlayerController, ECollisionChannel CollisionChannel)
 {
     if (!ensure(PlayerController != nullptr)) return false;
 
     // Ray trace mouse to world
     FHitResult HitResult;
     FCollisionQueryParams Params;
-    if (!PlayerController->GetHitResultAtScreenPosition(position, ECollisionChannel::ECC_WorldDynamic, Params, HitResult))
+    if (!PlayerController->GetHitResultAtScreenPosition(position, CollisionChannel, Params, HitResult))
     {
         UE_LOG(LogTemp, Warning, TEXT("Unable to trace raycast from mouse position to world"));
         return false;

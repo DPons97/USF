@@ -33,6 +33,9 @@ private:
 	void DrawSelectionBox();
 	
 	void DrawSelection();
+
+	template<typename T>
+	void ConfirmSelection(TArray<T*> SelectedUnits);
 	
 	bool isSelecting = false;
 

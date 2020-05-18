@@ -6,6 +6,7 @@
 #include "TimewarsSpectatorPawn.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/GameModeBase.h"
+#include "UI/MovementArrowActor.h"
 
 ATimewarsPlayerController::ATimewarsPlayerController()
 {    
@@ -21,6 +22,9 @@ void ATimewarsPlayerController::BeginPlay()
     Super::BeginPlay();
 
     TimewarsPawn = Cast<ATimewarsSpectatorPawn>(GetPawn());
+    
+    // Setup movement arrow animations     
+    MovementArrowActor = GetWorld()->SpawnActor<AMovementArrowActor>(AMovementArrowActor::StaticClass(), FVector(0,0,0), FRotator(0,0,0));
 }
 
 void ATimewarsPlayerController::SetupInputComponent()
@@ -47,10 +51,10 @@ void ATimewarsPlayerController::StartSelection()
 }
 
 void ATimewarsPlayerController::GiveMovementOrder()
-{    
+{  
     // Handle movement input
-
+    
+    
     // Fire animation
-
-    TimewarsPawn->FireMovementPing();
+    MovementArrowActor->PlayAnimationAtMousePosition();
 }

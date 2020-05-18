@@ -13,5 +13,4 @@ ATimewarsGameMode::ATimewarsGameMode()
     PlayerControllerClass = ATimewarsPlayerController::StaticClass();
     DefaultPawnClass = ATimewarsSpectatorPawn::StaticClass();
     HUDClass = AStrategyHUD::StaticClass();
-
 }

@@ -7,10 +7,14 @@
 AResourceActor::AResourceActor()
 {
 	ActorData.ActorType = EActorType::Resource;
-	OwningTeam = ETeam::Neutral;
+	ActorData.OwningTeam = ETeam::Neutral;
 }
 
-void AResourceActor::LeftMouse(FVector ClickPosition)
+void AResourceActor::Move(FVector ClickPosition)
 {
 	
+}
+
+void AResourceActor::BeginPlay()
+{
 }

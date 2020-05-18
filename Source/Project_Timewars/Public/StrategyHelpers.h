@@ -15,5 +15,5 @@ public:
 	~StrategyHelpers();
 	
 	static bool GetMousePosition(FVector2D& outMousePosition, APlayerController* PlayerController);
-	static bool DeprojectPositionToWorld(FVector2D position, FVector& outWorldPosition, APlayerController* PlayerController);
+	static bool DeprojectPositionToWorld(FVector2D position, FVector& outWorldPosition, APlayerController* PlayerController, ECollisionChannel CollisionChannel);
 };

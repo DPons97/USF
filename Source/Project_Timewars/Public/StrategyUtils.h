@@ -34,6 +34,9 @@ struct FSelectableData
 
 	UPROPERTY(EditDefaultsOnly, Category=Data)
 	TEnumAsByte<EActorType::Type> ActorType;
+
+	UPROPERTY(EditDefaultsOnly, Category=Data)
+	TEnumAsByte<ETeam::Type> OwningTeam;
 	
 	/** minimal attack damage */
     UPROPERTY(EditDefaultsOnly, Category=Data)
@@ -83,6 +86,7 @@ struct FSelectableData
 	FSelectableData()
 	{
 		ActorType = EActorType::UNDEFINED;
+		OwningTeam = ETeam::UNDEFINED;
 		AttackMin = 5.f;
 		AttackMax = 10.f;
 		AttackMinSiege = 2.f;
