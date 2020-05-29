@@ -2,8 +2,13 @@
 
 #include "TimewarsPlayerController.h"
 
+
+
+#include "DrawDebugHelpers.h"
+#include "StrategyHelpers.h"
 #include "StrategySelectionComponent.h"
 #include "TimewarsSpectatorPawn.h"
+#include "UnitAIController.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "UI/MovementArrowActor.h"
@@ -51,10 +56,20 @@ void ATimewarsPlayerController::StartSelection()
 }
 
 void ATimewarsPlayerController::GiveMovementOrder()
-{  
-    // Handle movement input
+{
+    FVector2D MousePosition;
+    StrategyHelpers::GetMousePosition(MousePosition, this);
+
+    FVector MouseToWorld;
+    StrategyHelpers::DeprojectPositionToWorld(MousePosition, MouseToWorld, this, ECollisionChannel::ECC_GameTraceChannel1);
+
     
+    // Handle movement input
+    for (auto a : SelectionComponent->GetCurrentSelectionControllers())
+    {
+        a->Move(MouseToWorld);
+    }
     
     // Fire animation
-    MovementArrowActor->PlayAnimationAtMousePosition();
+    MovementArrowActor->PlayAnimationAtWorldPosition(MouseToWorld);
 }

@@ -18,6 +18,8 @@ class PROJECT_TIMEWARS_API UStrategySelectionComponent : public UActorComponent
 
 public:
 	UStrategySelectionComponent();
+
+	TArray<class IStrategyCommandInterface*> GetCurrentSelectionControllers();
 	
     void EndSelection();
 
@@ -35,20 +37,20 @@ protected:
     float MaxSelectionApprox = 30.f;
     
 private:
-	TArray<class ASelectableActor*> MakeSingleSelection();
+	TArray<class ASelectablePawn*> MakeSingleSelection();
 	
-	TArray<ASelectableActor*> MakeMultipleSelection();
+	TArray<ASelectablePawn*> MakeMultipleSelection();
 
 	void ResetSelection();
 
-	void SelectActors(TArray<ASelectableActor*> selectedActors);
+	void SelectActors(TArray<ASelectablePawn*> selectedActors);
 
 	APlayerController* PlayerController;
 
 	AStrategyHUD* HUD;
 
 	/* Array of last selection. Actors in this array always implement IStrategySelectionInterface */
-	TArray<ASelectableActor*> SelectedActors;
+	TArray<ASelectablePawn*> SelectedActors;
 
 	bool isSelecting;
 

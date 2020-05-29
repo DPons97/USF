@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SelectableActor.h"
-
+#include "StrategyCommandInterface.h"
+#include "Pawns/SelectablePawn.h"
 #include "UnitActor.generated.h"
 
 class UAnimationAsset;
@@ -13,7 +13,7 @@ class UAnimSequence;
  * 
  */
 UCLASS()
-class PROJECT_TIMEWARS_API AUnitActor : public ASelectableActor
+class PROJECT_TIMEWARS_API AUnitActor : public ASelectablePawn, public IStrategyCommandInterface
 {
 	GENERATED_BODY()
 
@@ -34,7 +34,10 @@ public:
     TSoftObjectPtr<UAnimationAsset> RunningAnimation;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-    TSoftObjectPtr<UAnimationAsset> AttackingAnimation;	
+    TSoftObjectPtr<UAnimationAsset> AttackingAnimation;
+
+	UFUNCTION(BlueprintCallable)
+	UAnimationAsset* GetAnimation(TSoftObjectPtr<UAnimationAsset> Animation);
 	
 protected:
     void BeginPlay() override;

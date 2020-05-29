@@ -27,5 +27,4 @@ public:
 	 */
 	virtual void Move(FVector toLocation) = 0;
 
-protected:
 };

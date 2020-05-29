@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SelectableActor.h"
+#include "SelectablePawn.h"
 #include "TimewarsSpectatorPawn.h"
 #include "GameFramework/PlayerController.h"
 #include "TimewarsPlayerController.generated.h"

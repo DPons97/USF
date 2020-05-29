@@ -24,6 +24,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Selection)
 	class UAnimSequence* MovementArrowAnimSequence;
 
-	void PlayAnimationAtMousePosition();
+	void PlayAnimationAtWorldPosition(FVector position);
 
 };

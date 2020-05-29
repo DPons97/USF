@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "StrategyCommandInterface.h"
 #include "UnitAIController.generated.h"
 
 UENUM(BlueprintType)
@@ -19,16 +20,32 @@ enum EUnitTask
  * 
  */
 UCLASS()
-class PROJECT_TIMEWARS_API AUnitAIController : public AAIController
+class PROJECT_TIMEWARS_API AUnitAIController : public AAIController, public IStrategyCommandInterface
 {
 	GENERATED_BODY()
 
-public:
+public:	
 	AUnitAIController();
 
 	UFUNCTION()
 	void AttackUnit();
 
 	UFUNCTION()
-	void Move(FVector destination);
+	void Move(FVector destination) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UBlackboardData* BBAsset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+    class UBehaviorTree* BTAsset;
+
+protected:
+	void BeginPlay() override;
+	
+	void OnPossess(APawn* InPawn) override;
+
+private:
+	UBlackboardComponent* BlackboardComponent;
+	
+	class AUnitActor* PossessedUnit;	
 };

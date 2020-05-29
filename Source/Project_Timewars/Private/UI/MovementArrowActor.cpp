@@ -23,19 +23,9 @@ AMovementArrowActor::AMovementArrowActor()
 	GetSkeletalMeshComponent()->SetSkeletalMesh(ArrowSkeletalMesh.Object);
 }
 
-void AMovementArrowActor::PlayAnimationAtMousePosition()
+void AMovementArrowActor::PlayAnimationAtWorldPosition(FVector position)
 {
-	if (MovementArrowAnimSequence == nullptr) return;
-
-	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0); 
-    
-	FVector2D MousePosition;
-	StrategyHelpers::GetMousePosition(MousePosition, PC);
-
-	FVector MouseToWorld;
-	StrategyHelpers::DeprojectPositionToWorld(MousePosition, MouseToWorld, PC, ECollisionChannel::ECC_WorldStatic);
-
-	SetActorLocation(MouseToWorld);
+	SetActorLocation(position);
 	GetSkeletalMeshComponent()->PlayAnimation(MovementArrowAnimSequence, false);
 }
 

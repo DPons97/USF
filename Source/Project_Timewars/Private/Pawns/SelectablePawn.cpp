@@ -1,7 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SelectableActor.h"
+#include "Pawns/SelectablePawn.h"
+
+
+#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -11,24 +14,18 @@
 #include "UObject/ConstructorHelpers.h"
 
 // Sets default values
-ASelectableActor::ASelectableActor()
-{
-	AIControllerClass = AUnitAIController::StaticClass();
+ASelectablePawn::ASelectablePawn()
+{	
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
-	DefaultSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootScene"));
-	RootComponent = DefaultSceneComponent;
-
 	// Actor skeletal mesh and animations
 	// @todo: make skeletal mesh soft object reference?
-	ActorSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ActorSkeletalMesh"));
-	ActorSkeletalMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	ActorSkeletalMesh = GetMesh();
 	ActorSkeletalMesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
-
-	
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 
 	// Set the right selection and pre-selection circle color
 	SelectionCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionCircle"));
@@ -59,30 +56,42 @@ ASelectableActor::ASelectableActor()
 	if (!ensure(PreSelectionMesh.Object != nullptr)) return;
 	PreSelectionCircle->SetStaticMesh(PreSelectionMesh.Object);
 
-    ASelectableActor::SetActorSelected(false);
+    ASelectablePawn::SetActorSelected(false);
 }
 
 // Called when the game starts or when spawned
-void ASelectableActor::BeginPlay()
+void ASelectablePawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// if (!Controller->Implements<UStrategyCommandInterface>())
+	// {
+	// 	UE_LOG(LogTemp, Error, TEXT("Selectable pawn not implementing strategy command interface! This will lead to not being able to issue commands to this pawn"));
+	// }
+	// 
+	ActorSkeletalMesh = GetMesh();
 
 	ActorData.Health = ActorData.MaxHealth;
 	ActorData.Speed = ActorData.MaxSpeed;
 }
 
-void ASelectableActor::SetActorSelected(bool isSelected)
+void ASelectablePawn::SetActorSelected(bool isSelected)
 {
 	SelectionCircle->SetVisibility(isSelected);
 	SetActorPreSelected(false);
 }
 
-void ASelectableActor::SetActorPreSelected(bool isPreSelected)
+void ASelectablePawn::SetActorPreSelected(bool isPreSelected)
 {
 	PreSelectionCircle->SetVisibility(isPreSelected);
 }
 
-void ASelectableActor::ApplyAnimation(TSoftObjectPtr<UAnimationAsset> newAnimation)
+IStrategyCommandInterface* ASelectablePawn::GetControllerInterface()
+{
+	return Cast<IStrategyCommandInterface>(Controller);
+}
+
+void ASelectablePawn::ApplyAnimation(TSoftObjectPtr<UAnimationAsset> newAnimation)
 {
 	if (!newAnimation.IsPending() && ActorSkeletalMesh != nullptr)
 	{

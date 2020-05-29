@@ -35,7 +35,7 @@ void AStrategyHUD::EndSelection()
 	isSelecting = false;
 }
 
-TArray<ASelectableActor*> AStrategyHUD::GetCurrentSelection()
+TArray<ASelectablePawn*> AStrategyHUD::GetCurrentSelection()
 {
 	return LastSelection;
 }

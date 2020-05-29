@@ -21,7 +21,7 @@ public:
 
 	void DrawHUD() override;
 
-	TArray<class ASelectableActor*> GetCurrentSelection();
+	TArray<class ASelectablePawn*> GetCurrentSelection();
 
 	UPROPERTY(EditDefaultsOnly)
 	float SelectionBorderThickness = 1.f;
@@ -44,5 +44,5 @@ private:
 
 	FVector2D SelectionEndPoint;
 
-	TArray<ASelectableActor*> LastSelection;
+	TArray<ASelectablePawn*> LastSelection;
 };
