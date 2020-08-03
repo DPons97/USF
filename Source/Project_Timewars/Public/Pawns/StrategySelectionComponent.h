@@ -49,7 +49,7 @@ private:
 
 	AStrategyHUD* HUD;
 
-	/* Array of last selection. Actors in this array always implement IStrategySelectionInterface */
+	/* Array of last selection (pawns) */
 	TArray<ASelectablePawn*> SelectedActors;
 
 	bool isSelecting;

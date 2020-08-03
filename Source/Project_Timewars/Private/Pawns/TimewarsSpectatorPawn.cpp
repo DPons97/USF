@@ -49,6 +49,8 @@ void ATimewarsSpectatorPawn::Tick(float DeltaSeconds)
 void ATimewarsSpectatorPawn::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (StrategyMovementComponent != nullptr) StrategyMovementComponent->RepositionCamera();
 }
 
 void ATimewarsSpectatorPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -160,4 +162,18 @@ void ATimewarsSpectatorPawn::RotateDown()
 {
     if (MovementComponent == nullptr) return;
     StrategyMovementComponent->RotateDown();
+}
+
+float ATimewarsSpectatorPawn::GetCameraZAngle()
+{
+    if (!ensure(StrategyMovementComponent != nullptr)) return 0.f;
+
+    return StrategyMovementComponent->CameraZAngle;
+}
+
+float ATimewarsSpectatorPawn::GetCameraHeightAngle()
+{
+    if (!ensure(StrategyMovementComponent != nullptr)) return 0.f;
+
+    return StrategyMovementComponent->CameraHeightAngle;
 }

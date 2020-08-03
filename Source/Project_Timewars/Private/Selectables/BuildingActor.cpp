@@ -8,12 +8,7 @@ ABuildingActor::ABuildingActor()
 	ActorData.ActorType = EActorType::Building;
 }
 
-void ABuildingActor::Move(FVector ClickPosition)
-{
-	
-}
-
 void ABuildingActor::BeginPlay()
 {
-	
+	Super::BeginPlay();
 }

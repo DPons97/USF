@@ -13,15 +13,12 @@ class UAnimSequence;
  * 
  */
 UCLASS()
-class PROJECT_TIMEWARS_API AUnitActor : public ASelectablePawn, public IStrategyCommandInterface
+class PROJECT_TIMEWARS_API AUnitActor : public ASelectablePawn
 {
 	GENERATED_BODY()
 
 public:
 	AUnitActor();
-
-	/* Strategy interface implementations */
-	void Move(FVector ClickPosition) override;
 
 	// Actor meshes and animations
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -43,5 +40,6 @@ protected:
     void BeginPlay() override;
 
 private:
+	
 
 };

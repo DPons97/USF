@@ -10,11 +10,6 @@ AResourceActor::AResourceActor()
 	ActorData.OwningTeam = ETeam::Neutral;
 }
 
-void AResourceActor::Move(FVector ClickPosition)
-{
-	
-}
-
 void AResourceActor::BeginPlay()
 {
 }

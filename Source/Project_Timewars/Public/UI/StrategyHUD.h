@@ -28,7 +28,8 @@ public:
 
 protected:
 	AStrategyHUD();
-	
+
+	void BeginPlay() override;
 private:
 	void DrawSelectionBox();
 	
@@ -39,6 +40,11 @@ private:
 	
 	bool isSelecting = false;
 
+	// Player controller and owner of this HUD
+	class ATimewarsPlayerController * PlayerController;
+	
+	class ATimewarsSpectatorPawn * SpectatorPawn;
+	
 	// Storing starting and ending selection points
 	FVector2D SelectionStartPoint;
 

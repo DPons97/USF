@@ -3,7 +3,6 @@
 
 #include "Pawns/SelectablePawn.h"
 
-
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
@@ -51,11 +50,11 @@ ASelectablePawn::ASelectablePawn()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh>SelectionCircleMesh(SelectionCirclePath);
 	if (!ensure(SelectionCircleMesh.Object != nullptr)) return;	
 	SelectionCircle->SetStaticMesh(SelectionCircleMesh.Object);
-
+	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh>PreSelectionMesh(PreselectionCirclePath);
 	if (!ensure(PreSelectionMesh.Object != nullptr)) return;
 	PreSelectionCircle->SetStaticMesh(PreSelectionMesh.Object);
-
+	
     ASelectablePawn::SetActorSelected(false);
 }
 

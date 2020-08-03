@@ -12,16 +12,13 @@
  * 
  */
 UCLASS()
-class PROJECT_TIMEWARS_API AResourceActor : public ASelectablePawn, public IStrategyCommandInterface
+class PROJECT_TIMEWARS_API AResourceActor : public ASelectablePawn
 {
 	GENERATED_BODY()
 
 
 public:
 	AResourceActor();
-
-	/* Strategy interface implementations */
-	void Move(FVector ClickPosition) override;
 
 protected:
     void BeginPlay() override;

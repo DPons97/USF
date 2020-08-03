@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "SelectablePawn.generated.h"
 
+
 UCLASS()
 class PROJECT_TIMEWARS_API ASelectablePawn :
     public ACharacter, public IStrategySelectionInterface

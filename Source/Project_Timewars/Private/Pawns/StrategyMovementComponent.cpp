@@ -37,7 +37,6 @@ UStrategyMovementComponent::UStrategyMovementComponent()
     bCanMoveCamera = true;
 }
 
-
 void UStrategyMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
     FActorComponentTickFunction* ThisTickFunction)
 {
@@ -217,8 +216,9 @@ void UStrategyMovementComponent::RepositionCamera()
     float sinCameraZAngle = FMath::Sin(FMath::DegreesToRadians(CameraZAngle));
     float cosCameraZAngle = FMath::Cos(FMath::DegreesToRadians(CameraZAngle));
 
-    float sinCameraHeightAngle = FMath::Sin(FMath::DegreesToRadians(CameraHeightAngle));
-    float cosCameraHeightAngle = FMath::Cos(FMath::DegreesToRadians(CameraHeightAngle));
+    // Adding PI/2 to be consistent with reference system rotation
+    float sinCameraHeightAngle = FMath::Sin(FMath::DegreesToRadians(CameraHeightAngle+90));
+    float cosCameraHeightAngle = FMath::Cos(FMath::DegreesToRadians(CameraHeightAngle+90));
 
     NewLocation.X = cosCameraZAngle * cosCameraHeightAngle * CameraRadius;
     NewLocation.Y = sinCameraZAngle * cosCameraHeightAngle * CameraRadius;

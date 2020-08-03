@@ -7,10 +7,19 @@
 #include "UnitActor.h"
 #include "ResourceActor.h"
 #include "StrategyHelpers.h"
+#include "TimewarsPlayerController.h"
+#include "TimewarsSpectatorPawn.h"
 
 AStrategyHUD::AStrategyHUD()
 {
 	
+}
+
+void AStrategyHUD::BeginPlay()
+{
+	PlayerController = Cast<ATimewarsPlayerController>(GetOwningPlayerController());
+	
+	SpectatorPawn = Cast<ATimewarsSpectatorPawn>(PlayerController->GetPawn());
 }
 
 void AStrategyHUD::DrawHUD()
@@ -58,14 +67,14 @@ void AStrategyHUD::DrawSelection()
 
 		// First, select units
 		TArray<AUnitActor*> SelectedUnits;
-		GetActorsInSelectionRectangle<AUnitActor>(
+		StrategyHelpers::GetActorsInSelectionRectangle(
             SelectionStartPoint,
             SelectionEndPoint,
             SelectedUnits,
-            true,
-            false
+            PlayerController,
+            SpectatorPawn->GetCameraZAngle()
         );
-
+		
 		if (SelectedUnits.Num() > 0)
 		{
 			ConfirmSelection<AUnitActor>(SelectedUnits);
@@ -74,12 +83,12 @@ void AStrategyHUD::DrawSelection()
 
 		// If no units inside selection rectangle, search for buildings
 		TArray<ABuildingActor*> SelectedBuildings;
-		GetActorsInSelectionRectangle<ABuildingActor>(
+		StrategyHelpers::GetActorsInSelectionRectangle(
             SelectionStartPoint,
             SelectionEndPoint,
             SelectedBuildings,
-            true,
-            false
+            PlayerController,
+            SpectatorPawn->GetCameraZAngle()
         );
 
 		if (SelectedBuildings.Num() > 0)
@@ -90,12 +99,12 @@ void AStrategyHUD::DrawSelection()
 
 		// If no units nor buildings inside selection rectangle, try resources
 		TArray<AResourceActor*> SelectedResources;
-		GetActorsInSelectionRectangle<AResourceActor>(
+		StrategyHelpers::GetActorsInSelectionRectangle<AResourceActor>(
             SelectionStartPoint,
             SelectionEndPoint,
             SelectedResources,
-            true,
-            false
+            PlayerController,
+            SpectatorPawn->GetCameraZAngle()
         );
 
 		if (SelectedResources.Num() > 0)

@@ -29,6 +29,11 @@ public:
 	
 	/** Tick Function, handles keyboard inputs */
 	virtual void Tick(float DeltaSeconds) override;
+
+	//------------------------------------
+	float GetCameraZAngle();
+
+	float GetCameraHeightAngle();
 	
 protected:
 	void BeginPlay() override;

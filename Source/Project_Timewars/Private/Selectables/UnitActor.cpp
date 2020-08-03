@@ -19,11 +19,6 @@ void AUnitActor::BeginPlay()
 	ApplyAnimation(IdleAnimation);
 }
 
-void AUnitActor::Move(FVector ClickPosition)
-{
-	
-}
-
 UAnimationAsset* AUnitActor::GetAnimation(TSoftObjectPtr<UAnimationAsset> Animation)
 {
 	if (!Animation.IsPending())
