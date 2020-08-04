@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "StrategyCommandInterface.h"
 #include "Pawns/SelectablePawn.h"
 #include "UnitActor.generated.h"
 
 class UAnimationAsset;
 class UAnimSequence;
+
 /**
  * 
  */
@@ -35,11 +35,17 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	UAnimationAsset* GetAnimation(TSoftObjectPtr<UAnimationAsset> Animation);
+
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentTask(enum EUnitTask NewTask) { CurrentTask = NewTask; }
+
+	UFUNCTION(BlueprintCallable)
+	EUnitTask GetCurrentTask() { return CurrentTask; }
 	
 protected:
     void BeginPlay() override;
 
 private:
-	
+	EUnitTask CurrentTask;
 
 };

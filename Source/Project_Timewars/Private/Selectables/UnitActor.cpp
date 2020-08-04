@@ -10,13 +10,12 @@ AUnitActor::AUnitActor()
 {
 	AIControllerClass = AUnitAIController::StaticClass();
 	ActorData.ActorType = EActorType::Unit;
+	CurrentTask = Idle;
 }
 
 void AUnitActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	ApplyAnimation(IdleAnimation);
 }
 
 UAnimationAsset* AUnitActor::GetAnimation(TSoftObjectPtr<UAnimationAsset> Animation)

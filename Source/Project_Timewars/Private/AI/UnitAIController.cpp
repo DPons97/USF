@@ -15,6 +15,8 @@ AUnitAIController::AUnitAIController()
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree>BTObject(TEXT("BehaviorTree'/Game/AI/Units_BT.Units_BT'"));
 	if (!ensure(BTObject.Object != nullptr)) return;
 	BTAsset = BTObject.Object;
+
+	bAttachToPawn = true;
 }
 
 void AUnitAIController::BeginPlay()
@@ -48,5 +50,7 @@ void AUnitAIController::Move(FVector destination)
 	
 	BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), destination);
 	BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Moving);
+
+	PossessedUnit->SetCurrentTask(Moving);
 }
 

@@ -27,7 +27,7 @@ namespace EActorType
 	};	
 }
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FSelectableData
 {
 	GENERATED_USTRUCT_BODY()
