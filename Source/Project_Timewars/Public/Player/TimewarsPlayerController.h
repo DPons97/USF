@@ -35,7 +35,7 @@ private:
 
 	void StartSelection();
 	
-	void GiveMovementOrder();
+	void MouseRight();
 	
 	ATimewarsSpectatorPawn* TimewarsPawn;
 };

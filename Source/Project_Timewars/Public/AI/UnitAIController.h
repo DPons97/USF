@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
+#include "StrategyAIController.h"
 #include "StrategyCommandInterface.h"
 #include "UnitAIController.generated.h"
 
@@ -20,7 +20,7 @@ enum EUnitTask
  * 
  */
 UCLASS()
-class PROJECT_TIMEWARS_API AUnitAIController : public AAIController, public IStrategyCommandInterface
+class PROJECT_TIMEWARS_API AUnitAIController : public AStrategyAIController, public IStrategyCommandInterface
 {
 	GENERATED_BODY()
 
@@ -31,13 +31,7 @@ public:
 	void AttackUnit();
 
 	UFUNCTION()
-	void Move(FVector destination) override;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	class UBlackboardData* BBAsset;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-    class UBehaviorTree* BTAsset;
+	void MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination) override;
 
 protected:
 	void BeginPlay() override;
@@ -45,7 +39,6 @@ protected:
 	void OnPossess(APawn* InPawn) override;
 
 private:
-	UBlackboardComponent* BlackboardComponent;
 	
 	class AUnitActor* PossessedUnit;	
 };

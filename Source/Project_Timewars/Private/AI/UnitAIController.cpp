@@ -5,6 +5,7 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "TimewarsSpectatorPawn.h"
 
 AUnitAIController::AUnitAIController()
 {
@@ -15,8 +16,6 @@ AUnitAIController::AUnitAIController()
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree>BTObject(TEXT("BehaviorTree'/Game/AI/Units_BT.Units_BT'"));
 	if (!ensure(BTObject.Object != nullptr)) return;
 	BTAsset = BTObject.Object;
-
-	bAttachToPawn = true;
 }
 
 void AUnitAIController::BeginPlay()
@@ -31,22 +30,19 @@ void AUnitAIController::OnPossess(APawn* InPawn)
 	// Casting possessed pawn and controller interface injection
 	PossessedUnit = Cast<AUnitActor>(InPawn);
 	
-	if (!ensure(BBAsset != nullptr && BTAsset != nullptr)) return;
-	UseBlackboard(BBAsset, BlackboardComponent);
-	RunBehaviorTree(BTAsset);
 	BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Idle);
 	BlackboardComponent->SetValueAsVector(TEXT("CurrentDestination"), FVector(0,0,0));
 	BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), FVector(0,0,0));
-	BlackboardComponent->SetValueAsVector(TEXT("CurrentLocation"), PossessedUnit->GetActorLocation());
 }
 
 void AUnitAIController::AttackUnit()
 {
 }
 
-void AUnitAIController::Move(FVector destination)
+void AUnitAIController::MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination)
 {
 	if (!ensure(BlackboardComponent != nullptr)) return;
+	if (!CanPerformActions(Requestor)) return;
 	
 	BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), destination);
 	BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Moving);

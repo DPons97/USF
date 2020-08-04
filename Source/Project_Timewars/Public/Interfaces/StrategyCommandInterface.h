@@ -25,6 +25,6 @@ public:
 	/* Handle Left mouse operations
 	 * @param ClickPosition -> Mouse position on click in World space
 	 */
-	virtual void Move(FVector toLocation) = 0;
+	virtual void MouseRight(class ATimewarsSpectatorPawn* Requestor, FVector toLocation) = 0;
 
 };

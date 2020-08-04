@@ -34,48 +34,54 @@ ASelectablePawn::ASelectablePawn()
 	PreSelectionCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PreSelectionCircle"));
 	PreSelectionCircle->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
 	PreSelectionCircle->SetCollisionProfileName(TEXT("NoCollision"));
+
+	TCHAR* SelectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_SelectionCircle.S_SelectionCircle'");
+	TCHAR* PreselectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_PreSelectionCircle.S_PreSelectionCircle'");
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh>SelectionCircleMesh_Survivors(SelectionCirclePath);
+	if (!ensure(SelectionCircleMesh_Survivors.Object != nullptr)) return;	
+	SelectionCircle_Survivors = SelectionCircleMesh_Survivors.Object;
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh>PreSelectionMesh_Survivors(PreselectionCirclePath);
+	if (!ensure(PreSelectionMesh_Survivors.Object != nullptr)) return;
+	PreSelectionCircle_Survivors = PreSelectionMesh_Survivors.Object;
+
+	SelectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_EnemySlectionCircle.S_EnemySlectionCircle'");
+	PreselectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_EnemyPreSelection.S_EnemyPreSelection'");
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh>SelectionCircleMesh_Zombies(SelectionCirclePath);
+	if (!ensure(SelectionCircleMesh_Zombies.Object != nullptr)) return;	
+	SelectionCircle_Zombies = SelectionCircleMesh_Zombies.Object;
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh>PreSelectionMesh_Zombies(PreselectionCirclePath);
+	if (!ensure(PreSelectionMesh_Zombies.Object != nullptr)) return;
+	PreSelectionCircle_Zombies = PreSelectionMesh_Zombies.Object;   
 	
-	TCHAR* SelectionCirclePath;
-	TCHAR* PreselectionCirclePath; 
-	if (ActorData.OwningTeam == ETeam::Zombie)
-	{
-		SelectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_EnemySlectionCircle.S_EnemySlectionCircle'");
-		PreselectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_EnemyPreSelection.S_EnemyPreSelection'");
-	} else
-	{
-		SelectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_SelectionCircle.S_SelectionCircle'");
-		PreselectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_PreSelectionCircle.S_PreSelectionCircle'");
-	}
-	
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>SelectionCircleMesh(SelectionCirclePath);
-	if (!ensure(SelectionCircleMesh.Object != nullptr)) return;	
-	SelectionCircle->SetStaticMesh(SelectionCircleMesh.Object);
-	
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>PreSelectionMesh(PreselectionCirclePath);
-	if (!ensure(PreSelectionMesh.Object != nullptr)) return;
-	PreSelectionCircle->SetStaticMesh(PreSelectionMesh.Object);
-	
-    ASelectablePawn::SetActorSelected(false);
+	ASelectablePawn::SetActorSelected(false);
 }
 
 // Called when the game starts or when spawned
 void ASelectablePawn::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// if (!Controller->Implements<UStrategyCommandInterface>())
-	// {
-	// 	UE_LOG(LogTemp, Error, TEXT("Selectable pawn not implementing strategy command interface! This will lead to not being able to issue commands to this pawn"));
-	// }
-	// 
 	ActorSkeletalMesh = GetMesh();
 
 	ActorData.Health = ActorData.MaxHealth;
 	ActorData.Speed = ActorData.MaxSpeed;
+    
+	if (ActorData.OwningTeam == ETeam::Zombie)
+	{
+		SelectionCircle->SetStaticMesh(SelectionCircle_Zombies);
+		PreSelectionCircle->SetStaticMesh(PreSelectionCircle_Zombies);
+	} else
+	{
+		SelectionCircle->SetStaticMesh(SelectionCircle_Survivors);
+		PreSelectionCircle->SetStaticMesh(PreSelectionCircle_Survivors);
+	}
 }
 
 void ASelectablePawn::SetActorSelected(bool isSelected)
-{
+{	
 	SelectionCircle->SetVisibility(isSelected);
 	SetActorPreSelected(false);
 }
@@ -88,17 +94,4 @@ void ASelectablePawn::SetActorPreSelected(bool isPreSelected)
 IStrategyCommandInterface* ASelectablePawn::GetControllerInterface()
 {
 	return Cast<IStrategyCommandInterface>(Controller);
-}
-
-void ASelectablePawn::ApplyAnimation(TSoftObjectPtr<UAnimationAsset> newAnimation)
-{
-	if (!newAnimation.IsPending() && ActorSkeletalMesh != nullptr)
-	{
-		ActorSkeletalMesh->PlayAnimation(newAnimation.Get(), true);
-	} else if (newAnimation.IsPending())
-	{
-		FStreamableManager Streamable;
-		const FSoftObjectPath& AnimRef = newAnimation.ToSoftObjectPath();
-		newAnimation = Cast<UAnimationAsset>(Streamable.LoadSynchronous(AnimRef));
-	}
 }

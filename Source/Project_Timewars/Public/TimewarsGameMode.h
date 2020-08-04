@@ -15,5 +15,5 @@ class PROJECT_TIMEWARS_API ATimewarsGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	ATimewarsGameMode();	
+	ATimewarsGameMode();
 };

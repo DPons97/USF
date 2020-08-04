@@ -24,14 +24,21 @@ public:
 
 	class IStrategyCommandInterface* GetControllerInterface();
 
+	UFUNCTION(BlueprintCallable)
+	class ATimewarsSpectatorPawn* GetOwnerPlayerPawn() const { return OwnerPlayerPawn; }
+
+	UFUNCTION(BlueprintCallable)
+    void SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner) { this->OwnerPlayerPawn = NewOwner; }
+
+	UPROPERTY(EditDefaultsOnly)
+	FSelectableData ActorData; 
+
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
-
-	void ApplyAnimation(TSoftObjectPtr<class UAnimationAsset> newAnimation);
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    class UStaticMeshComponent* SelectionCircle;
+    UStaticMeshComponent* SelectionCircle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     UStaticMeshComponent* PreSelectionCircle;
@@ -39,4 +46,17 @@ protected:
 	// Actor mesh and animations
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     class USkeletalMeshComponent* ActorSkeletalMesh;
+
+private:
+	ATimewarsSpectatorPawn* OwnerPlayerPawn;
+
+    UStaticMesh* SelectionCircle_Survivors;
+
+    UStaticMesh* PreSelectionCircle_Survivors;
+
+	UStaticMesh* SelectionCircle_Zombies;
+
+	UStaticMesh* PreSelectionCircle_Zombies;
+
+	
 };

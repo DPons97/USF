@@ -40,7 +40,7 @@ void ATimewarsPlayerController::SetupInputComponent()
     InputComponent->BindAction("MouseLeft", IE_Pressed, this, &ATimewarsPlayerController::StartSelection);
     InputComponent->BindAction("MouseLeft", IE_Released, this, &ATimewarsPlayerController::EndSelection);
 
-    InputComponent->BindAction("MouseRight", IE_Pressed, this, &ATimewarsPlayerController::GiveMovementOrder);
+    InputComponent->BindAction("MouseRight", IE_Pressed, this, &ATimewarsPlayerController::MouseRight);
 }
 
 void ATimewarsPlayerController::EndSelection()
@@ -55,7 +55,7 @@ void ATimewarsPlayerController::StartSelection()
     TimewarsPawn->StartSelection();
 }
 
-void ATimewarsPlayerController::GiveMovementOrder()
+void ATimewarsPlayerController::MouseRight()
 {
     FVector2D MousePosition;
     StrategyHelpers::GetMousePosition(MousePosition, this);
@@ -67,7 +67,7 @@ void ATimewarsPlayerController::GiveMovementOrder()
     // Handle movement input
     for (auto a : SelectionComponent->GetCurrentSelectionControllers())
     {
-        a->Move(MouseToWorld);
+        a->MouseRight(TimewarsPawn, MouseToWorld);
     }
     
     // Fire animation

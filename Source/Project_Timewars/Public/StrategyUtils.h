@@ -27,6 +27,18 @@ namespace EActorType
 	};	
 }
 
+UENUM()
+namespace ESurvivorTeam
+{
+	enum Type
+	{
+		BLUE,
+		RED,
+		GREEN,
+		PURPLE
+	};
+}
+
 USTRUCT(BlueprintType)
 struct FSelectableData
 {
@@ -99,31 +111,4 @@ struct FSelectableData
 		MaxSpeed = 10;
 		Speed = MaxSpeed;
 	}
-};
-
-struct FPlayerData
-{
-	/* Current points */
-	uint32 PointsAvailable;
-	
-	/** current resources */
-	uint32 StoneAvailable;
-	uint32 WoodAvailable;
-	uint32 FoodAvailable;
-
-	/* total points gathered */
-	uint32 PointsTotal;
-	
-	/** total resources gathered */
-	uint32 StoneTotal;
-	uint32 WoodTotal;
-	uint32 FoodTotal;
-
-	/* todo: time machine weak pointer */
-
-	/** player owned unit list */
-	TArray<TWeakObjectPtr<class AUnitActor>> UnitsList;
-	
-	/** player owned buildings list */
-	TArray<TWeakObjectPtr<class ABuildingActor>> BuildingsList;
 };
