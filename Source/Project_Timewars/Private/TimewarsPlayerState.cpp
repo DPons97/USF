@@ -5,7 +5,7 @@
 
 ATimewarsPlayerState::ATimewarsPlayerState()
 {
-	Team = ESurvivorTeam::BLUE;
+	TeamColor = ESurvivorColor::Blue;
 
 	PointsAvailable = 0;
 	

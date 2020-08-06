@@ -20,7 +20,7 @@ public:
 	
 	/* Player color / team */
 	UPROPERTY(EditDefaultsOnly)
-	TEnumAsByte<ESurvivorTeam::Type> Team; 
+	TEnumAsByte<ESurvivorColor::Type> TeamColor; 
 	
 	/* Current points */
 	UPROPERTY(EditDefaultsOnly)

@@ -3,6 +3,7 @@
 
 #include "Pawns/SelectablePawn.h"
 
+#include "TimewarsGameMode.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
@@ -11,6 +12,7 @@
 #include "Engine/StreamableManager.h"
 #include "Project_Timewars/Public/AI/UnitAIController.h"
 #include "UObject/ConstructorHelpers.h"
+#include "TimewarsSpectatorPawn.h"
 
 // Sets default values
 ASelectablePawn::ASelectablePawn()
@@ -26,7 +28,9 @@ ASelectablePawn::ASelectablePawn()
 	ActorSkeletalMesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 
-	// Set the right selection and pre-selection circle color
+	// ----------------------------------
+	// SELECTION CIRCLES
+	// ----------------------------------
 	SelectionCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionCircle"));
 	SelectionCircle->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
 	SelectionCircle->SetCollisionProfileName(TEXT("NoCollision"));
@@ -35,30 +39,22 @@ ASelectablePawn::ASelectablePawn()
 	PreSelectionCircle->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
 	PreSelectionCircle->SetCollisionProfileName(TEXT("NoCollision"));
 
-	TCHAR* SelectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_SelectionCircle.S_SelectionCircle'");
-	TCHAR* PreselectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_PreSelectionCircle.S_PreSelectionCircle'");
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>SelectionCircleMesh_Survivors(SelectionCirclePath);
-	if (!ensure(SelectionCircleMesh_Survivors.Object != nullptr)) return;	
-	SelectionCircle_Survivors = SelectionCircleMesh_Survivors.Object;
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>PreSelectionMesh_Survivors(PreselectionCirclePath);
-	if (!ensure(PreSelectionMesh_Survivors.Object != nullptr)) return;
-	PreSelectionCircle_Survivors = PreSelectionMesh_Survivors.Object;
-
-	SelectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_EnemySlectionCircle.S_EnemySlectionCircle'");
-	PreselectionCirclePath = TEXT("StaticMesh'/Game/UI/Selection/S_EnemyPreSelection.S_EnemyPreSelection'");
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>SelectionCircleMesh_Zombies(SelectionCirclePath);
-	if (!ensure(SelectionCircleMesh_Zombies.Object != nullptr)) return;	
-	SelectionCircle_Zombies = SelectionCircleMesh_Zombies.Object;
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>PreSelectionMesh_Zombies(PreselectionCirclePath);
-	if (!ensure(PreSelectionMesh_Zombies.Object != nullptr)) return;
-	PreSelectionCircle_Zombies = PreSelectionMesh_Zombies.Object;   
-	
-	ASelectablePawn::SetActorSelected(false);
-}
+	for (int i=0 ; i < 6; i++)
+	{
+		FString SelPathStr = "StaticMesh'/Game/UI/Selection/S_SelectionCircle_" + FString::FromInt(i) + ".S_SelectionCircle_" + FString::FromInt(i) + "'";
+		FString PrePathStr = "StaticMesh'/Game/UI/Selection/S_PreSelectionCircle_" + FString::FromInt(i) + ".S_PreSelectionCircle_" + FString::FromInt(i) + "'";
+		const TCHAR* SelPath = *SelPathStr;
+		const TCHAR* PrePath = *PrePathStr;
+		
+		ConstructorHelpers::FObjectFinder<UStaticMesh>SelectionCircleMesh(SelPath);
+		ConstructorHelpers::FObjectFinder<UStaticMesh>PreSelectionCircleMesh(PrePath);
+		if (ensure(SelectionCircleMesh.Object != nullptr))
+		{
+			SelectionCircles.Add(SelectionCircleMesh.Object);
+			PreSelectionCircles.Add(PreSelectionCircleMesh.Object);
+		}
+	}
+	}
 
 // Called when the game starts or when spawned
 void ASelectablePawn::BeginPlay()
@@ -68,20 +64,15 @@ void ASelectablePawn::BeginPlay()
 
 	ActorData.Health = ActorData.MaxHealth;
 	ActorData.Speed = ActorData.MaxSpeed;
-    
-	if (ActorData.OwningTeam == ETeam::Zombie)
-	{
-		SelectionCircle->SetStaticMesh(SelectionCircle_Zombies);
-		PreSelectionCircle->SetStaticMesh(PreSelectionCircle_Zombies);
-	} else
-	{
-		SelectionCircle->SetStaticMesh(SelectionCircle_Survivors);
-		PreSelectionCircle->SetStaticMesh(PreSelectionCircle_Survivors);
-	}
+
+	SelectionCircle->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[ActorData.OwningTeam]));
+	PreSelectionCircle->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[ActorData.OwningTeam]));
+
+	SetActorSelected(false);
 }
 
 void ASelectablePawn::SetActorSelected(bool isSelected)
-{	
+{
 	SelectionCircle->SetVisibility(isSelected);
 	SetActorPreSelected(false);
 }
@@ -94,4 +85,22 @@ void ASelectablePawn::SetActorPreSelected(bool isPreSelected)
 IStrategyCommandInterface* ASelectablePawn::GetControllerInterface()
 {
 	return Cast<IStrategyCommandInterface>(Controller);
+}
+
+void ASelectablePawn::SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner)
+{
+	this->OwnerPlayerPawn = NewOwner;
+	
+	SelectionCircle->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor]));
+	PreSelectionCircle->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor]));
+}
+
+UStaticMesh* ASelectablePawn::GetLazyLoadedMesh(TSoftObjectPtr<UStaticMesh> BaseMesh)
+{
+    if (BaseMesh.IsPending())
+    {
+        const FSoftObjectPath& AssetRef = BaseMesh.ToSoftObjectPath();
+        BaseMesh = BaseMesh.LoadSynchronous();
+    }
+    return BaseMesh.Get();
 }

@@ -28,7 +28,7 @@ public:
 	class ATimewarsSpectatorPawn* GetOwnerPlayerPawn() const { return OwnerPlayerPawn; }
 
 	UFUNCTION(BlueprintCallable)
-    void SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner) { this->OwnerPlayerPawn = NewOwner; }
+    void SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner);
 
 	UPROPERTY(EditDefaultsOnly)
 	FSelectableData ActorData; 
@@ -50,13 +50,12 @@ protected:
 private:
 	ATimewarsSpectatorPawn* OwnerPlayerPawn;
 
-    UStaticMesh* SelectionCircle_Survivors;
+	UPROPERTY(VisibleAnywhere)
+    TArray<TSoftObjectPtr<UStaticMesh>> SelectionCircles;
 
-    UStaticMesh* PreSelectionCircle_Survivors;
+	UPROPERTY(VisibleAnywhere)
+	TArray<TSoftObjectPtr<UStaticMesh>> PreSelectionCircles;
 
-	UStaticMesh* SelectionCircle_Zombies;
+	static class UStaticMesh* GetLazyLoadedMesh(TSoftObjectPtr<UStaticMesh> BaseMesh);
 
-	UStaticMesh* PreSelectionCircle_Zombies;
-
-	
 };

@@ -2,12 +2,12 @@
 
 
 #include "TimewarsSpectatorPawn.h"
+
 #include "Animation/SkeletalMeshActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 
 ATimewarsSpectatorPawn::ATimewarsSpectatorPawn(const FObjectInitializer& ObjectInitializer)
@@ -51,6 +51,8 @@ void ATimewarsSpectatorPawn::BeginPlay()
     Super::BeginPlay();
 
     if (StrategyMovementComponent != nullptr) StrategyMovementComponent->RepositionCamera();
+
+    StrategyPlayerState = Cast<ATimewarsPlayerState>(GetPlayerState());
 }
 
 void ATimewarsSpectatorPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -176,4 +178,9 @@ float ATimewarsSpectatorPawn::GetCameraHeightAngle()
     if (!ensure(StrategyMovementComponent != nullptr)) return 0.f;
 
     return StrategyMovementComponent->CameraHeightAngle;
+}
+
+ATimewarsPlayerState* ATimewarsSpectatorPawn::GetStrategyPlayerState() const
+{
+    return StrategyPlayerState;
 }

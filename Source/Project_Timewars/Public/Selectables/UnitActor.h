@@ -34,13 +34,10 @@ public:
     TSoftObjectPtr<UAnimationAsset> AttackingAnimation;
 
 	UFUNCTION(BlueprintCallable)
-	UAnimationAsset* GetAnimation(TSoftObjectPtr<UAnimationAsset> Animation);
-
-	UFUNCTION(BlueprintCallable)
 	void SetCurrentTask(enum EUnitTask NewTask) { CurrentTask = NewTask; }
 
 	UFUNCTION(BlueprintCallable)
-	EUnitTask GetCurrentTask() { return CurrentTask; }
+	EUnitTask GetCurrentTask() const { return CurrentTask; }
 	
 protected:
     void BeginPlay() override;

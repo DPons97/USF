@@ -8,11 +8,23 @@ UENUM()
 namespace ETeam {
 	enum Type
 	{
+		Neutral UMETA(DisplayName = "Neutral"),
+		Zombie UMETA(DisplayNam = "Zombie"),
 		Survivor UMETA(DisplayName = "Survivor"),
-	    Zombie UMETA(DisplayNam = "Zombie"),
-	    Neutral UMETA(DisplayName = "Neutral"),
-	    UNDEFINED UMETA(DisplayName = "UNDEFINED")
 	};
+}
+
+UENUM()
+namespace ESurvivorColor {
+	enum Type
+	{
+		White UMETA(DisplayName = "Team_White", Tooltip = "RESERVED for neutrals"),
+		Red UMETA(DisplayName = "Team_Red", Tooltip = "RESERVED for zombies"),
+        Blue UMETA(DisplayName = "Team_Blue"),
+        Cyan UMETA(DisplayName = "Team_Cyan"),
+        Green UMETA(DisplayName = "Team_Green"),
+        Purple UMETA(DisplayName = "Team_Purple"),
+    };
 }
 
 UENUM()
@@ -25,18 +37,6 @@ namespace EActorType
 	    Resource,
 	    UNDEFINED
 	};	
-}
-
-UENUM()
-namespace ESurvivorTeam
-{
-	enum Type
-	{
-		BLUE,
-		RED,
-		GREEN,
-		PURPLE
-	};
 }
 
 USTRUCT(BlueprintType)
@@ -98,7 +98,7 @@ struct FSelectableData
 	FSelectableData()
 	{
 		ActorType = EActorType::UNDEFINED;
-		OwningTeam = ETeam::UNDEFINED;
+		OwningTeam = ETeam::Neutral;
 		AttackMin = 5.f;
 		AttackMax = 10.f;
 		AttackMinSiege = 2.f;
