@@ -1,2 +1,2 @@
 # Timewars
-Survival cooperative RTS developed for GameDev.tv game jam 2020
+Survival cooperative RTS developed in Unreal Engine 4
