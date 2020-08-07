@@ -8,11 +8,13 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "UI/HealthBarWidgetComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StreamableManager.h"
 #include "Project_Timewars/Public/AI/UnitAIController.h"
 #include "UObject/ConstructorHelpers.h"
 #include "TimewarsSpectatorPawn.h"
+#include "StrategyHelpers.h"
 
 // Sets default values
 ASelectablePawn::ASelectablePawn()
@@ -23,21 +25,20 @@ ASelectablePawn::ASelectablePawn()
 	PrimaryActorTick.bCanEverTick = true;
 	
 	// Actor skeletal mesh and animations
-	// @todo: make skeletal mesh soft object reference?
 	ActorSkeletalMesh = GetMesh();
 	ActorSkeletalMesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 
 	// ----------------------------------
-	// SELECTION CIRCLES
+	// Selection circles
 	// ----------------------------------
-	SelectionCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionCircle"));
-	SelectionCircle->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
-	SelectionCircle->SetCollisionProfileName(TEXT("NoCollision"));
+	SelectionCircleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionCircle"));
+	SelectionCircleComponent->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
+	SelectionCircleComponent->SetCollisionProfileName(TEXT("NoCollision"));
 
-	PreSelectionCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PreSelectionCircle"));
-	PreSelectionCircle->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
-	PreSelectionCircle->SetCollisionProfileName(TEXT("NoCollision"));
+	PreSelectionCircleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PreSelectionCircle"));
+	PreSelectionCircleComponent->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
+	PreSelectionCircleComponent->SetCollisionProfileName(TEXT("NoCollision"));
 
 	for (int i=0 ; i < 6; i++)
 	{
@@ -54,7 +55,14 @@ ASelectablePawn::ASelectablePawn()
 			PreSelectionCircles.Add(PreSelectionCircleMesh.Object);
 		}
 	}
-	}
+
+	// ----------------------------------
+	// Health bar
+	// ----------------------------------
+	HealthbarComponent = CreateDefaultSubobject<UHealthBarWidgetComponent>(TEXT("HealthBar"));
+	HealthbarComponent->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
+	HealthbarComponent->SetCollisionProfileName(TEXT("NoCollision"));
+}
 
 // Called when the game starts or when spawned
 void ASelectablePawn::BeginPlay()
@@ -65,21 +73,33 @@ void ASelectablePawn::BeginPlay()
 	ActorData.Health = ActorData.MaxHealth;
 	ActorData.Speed = ActorData.MaxSpeed;
 
-	SelectionCircle->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[ActorData.OwningTeam]));
-	PreSelectionCircle->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[ActorData.OwningTeam]));
+	if (!ensure(SelectionCircleComponent != nullptr || PreSelectionCircleComponent != nullptr)) return;
+	SelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[ActorData.OwningTeam]));
+	PreSelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[ActorData.OwningTeam]));
+
+	if (!ensure(HealthbarComponent != nullptr)) return;
+	HealthbarComponent->Health = ActorData.Health;
+	HealthbarComponent->MaxHealth = ActorData.MaxHealth;
+	HealthbarComponent->SetHealthBarColor(StrategyHelpers::GetTeamColor(ActorData.OwningTeam));
 
 	SetActorSelected(false);
 }
 
 void ASelectablePawn::SetActorSelected(bool isSelected)
 {
-	SelectionCircle->SetVisibility(isSelected);
+	SelectionCircleComponent->SetVisibility(isSelected);
+
+	if (ActorData.Health == ActorData.MaxHealth)
+	{
+		HealthbarComponent->SetVisibility(isSelected);
+	}
+
 	SetActorPreSelected(false);
 }
 
 void ASelectablePawn::SetActorPreSelected(bool isPreSelected)
 {
-	PreSelectionCircle->SetVisibility(isPreSelected);
+	PreSelectionCircleComponent->SetVisibility(isPreSelected);
 }
 
 IStrategyCommandInterface* ASelectablePawn::GetControllerInterface()
@@ -91,8 +111,9 @@ void ASelectablePawn::SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner)
 {
 	this->OwnerPlayerPawn = NewOwner;
 	
-	SelectionCircle->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor]));
-	PreSelectionCircle->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor]));
+	SelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor]));
+	PreSelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor]));
+	HealthbarComponent->SetHealthBarColor(StrategyHelpers::GetTeamColor(OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor));
 }
 
 UStaticMesh* ASelectablePawn::GetLazyLoadedMesh(TSoftObjectPtr<UStaticMesh> BaseMesh)

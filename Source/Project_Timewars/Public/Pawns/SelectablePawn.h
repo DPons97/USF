@@ -36,12 +36,15 @@ public:
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    UStaticMeshComponent* SelectionCircle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    UStaticMeshComponent* PreSelectionCircle;
+    class UHealthBarWidgetComponent* HealthbarComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* SelectionCircleComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* PreSelectionCircleComponent;
 
 	// Actor mesh and animations
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

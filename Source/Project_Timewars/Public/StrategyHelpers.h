@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "StrategyUtils.h"
 #include "GameFramework/PlayerController.h"
 
 /**
@@ -57,6 +58,22 @@ public:
 
 		return true;
 	}
+
+	/**
+	 *	Get FColor from a specific ETeam value:
+	 *		- Neutral: Brown
+	 *		- Zombies: Red
+	 *		- Survivor: Black (use survivor color to get right color)
+	 */
+	static FColor GetTeamColor(ETeam::Type Team);
+
+	/**
+	*	Get FColor from a specific ETeam value:
+	*		- Neutral: Brown
+	*		- Zombies: Red
+	*		- Survivor: Blue/Cyan/Green/Purple
+	*/
+	static FColor GetTeamColor(ESurvivorColor::Type SurvivorColor);
 private:
 	static void GetActorsInSelectionRectangle(TSubclassOf<class AActor> ClassFilter, const FVector2D& FirstPoint, const FVector2D& SecondPoint, TArray<AActor*>& OutActors, APlayerController* PC, float CameraZAngle);
 

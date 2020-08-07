@@ -18,7 +18,7 @@ UENUM()
 namespace ESurvivorColor {
 	enum Type
 	{
-		White UMETA(DisplayName = "Team_White", Tooltip = "RESERVED for neutrals"),
+		Brown UMETA(DisplayName = "Team_White", Tooltip = "RESERVED for neutrals"),
 		Red UMETA(DisplayName = "Team_Red", Tooltip = "RESERVED for zombies"),
         Blue UMETA(DisplayName = "Team_Blue"),
         Cyan UMETA(DisplayName = "Team_Cyan"),
@@ -78,7 +78,7 @@ struct FSelectableData
 	UPROPERTY(EditDefaultsOnly, Category=Data)
     float MaxHealth;
 
-	/** maximum health */
+	/** current health */
 	UPROPERTY(EditDefaultsOnly, Category=Data)
     float Health;
 

@@ -51,6 +51,44 @@ bool StrategyHelpers::DeprojectPositionToWorld(FVector2D position, FVector &outW
     return true;
 }
 
+FColor StrategyHelpers::GetTeamColor(ETeam::Type Team)
+{
+    switch (Team)
+    {
+    case ETeam::Neutral:
+        return FColor::FromHex("C21F00FF") ;
+    case ETeam::Zombie:
+        return FColor::Red;
+    case ETeam::Survivor:
+        return FColor::Black;
+    default:
+        UE_LOG(LogTemp, Warning, TEXT("Invalid team type"))
+        return FColor::Black;
+    }
+}
+
+FColor StrategyHelpers::GetTeamColor(ESurvivorColor::Type SurvivorColor)
+{
+    switch (SurvivorColor)
+    {
+    case ESurvivorColor::Brown:
+        return FColor::FromHex("C21F00FF") ;
+    case ESurvivorColor::Red:
+        return FColor::Red;
+    case ESurvivorColor::Blue:
+        return FColor::Blue;
+    case ESurvivorColor::Cyan:
+        return FColor::Cyan;
+    case ESurvivorColor::Green:
+        return FColor::Green;
+    case ESurvivorColor::Purple:
+        return FColor::Purple;
+    default:
+        UE_LOG(LogTemp, Warning, TEXT("Invalid team type"))
+        return FColor::Black;
+    }
+}
+
 void StrategyHelpers::GetActorsInSelectionRectangle(TSubclassOf<class AActor> ClassFilter, const FVector2D& FirstPoint, const FVector2D& SecondPoint, TArray<AActor*>& OutActors, APlayerController* PC, float CameraZAngle)
 {
     // Because this is a HUD function it is likely to get called each tick,

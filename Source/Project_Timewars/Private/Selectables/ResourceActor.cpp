@@ -12,4 +12,5 @@ AResourceActor::AResourceActor()
 
 void AResourceActor::BeginPlay()
 {
+	Super::BeginPlay();
 }
