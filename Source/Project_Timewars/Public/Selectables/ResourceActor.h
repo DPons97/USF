@@ -9,7 +9,7 @@
 #include "ResourceActor.generated.h"
 
 /**
- * 
+ * 	Default ASelectableActor for natural resources. This class does not contain a movement component
  */
 UCLASS()
 class PROJECT_TIMEWARS_API AResourceActor : public ASelectablePawn
@@ -18,7 +18,7 @@ class PROJECT_TIMEWARS_API AResourceActor : public ASelectablePawn
 
 
 public:
-	AResourceActor();
+	AResourceActor(const FObjectInitializer& ObjectInitializer);
 
 protected:
     void BeginPlay() override;

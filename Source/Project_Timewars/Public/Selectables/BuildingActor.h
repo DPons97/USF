@@ -9,7 +9,7 @@
 #include "BuildingActor.generated.h"
 
 /**
- * 
+ * 	Default ASelectableActor for buildings. This class does not contain a movement component
  */
 UCLASS()
 class PROJECT_TIMEWARS_API ABuildingActor : public ASelectablePawn
@@ -18,7 +18,7 @@ class PROJECT_TIMEWARS_API ABuildingActor : public ASelectablePawn
 
 
 public:
-	ABuildingActor();
+	ABuildingActor(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	void BeginPlay() override;

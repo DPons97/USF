@@ -18,7 +18,7 @@ class PROJECT_TIMEWARS_API AUnitActor : public ASelectablePawn
 	GENERATED_BODY()
 
 public:
-	AUnitActor();
+	AUnitActor(const FObjectInitializer& ObjectInitializer);
 
 	// Actor meshes and animations
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)

@@ -4,8 +4,10 @@
 #include "Selectables/UnitActor.h"
 #include "UnitAIController.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Selectables/UnitMovementComponent.h"
 
-AUnitActor::AUnitActor()
+AUnitActor::AUnitActor(const FObjectInitializer& ObjectInitializer) :
+	Super(ObjectInitializer.SetDefaultSubobjectClass(Super::SelectableMovementComponentName, UUnitMovementComponent::StaticClass()))
 {
 	AIControllerClass = AUnitAIController::StaticClass();
 	ActorData.ActorType = EActorType::Unit;

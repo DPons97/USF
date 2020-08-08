@@ -4,7 +4,8 @@
 #include "Selectables/ResourceActor.h"
 
 
-AResourceActor::AResourceActor()
+AResourceActor::AResourceActor(const FObjectInitializer& ObjectInitializer) :
+	Super(ObjectInitializer.DoNotCreateDefaultSubobject(Super::SelectableMovementComponentName))
 {
 	ActorData.ActorType = EActorType::Resource;
 	ActorData.OwningTeam = ETeam::Neutral;

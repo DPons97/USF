@@ -3,7 +3,8 @@
 
 #include "Selectables/BuildingActor.h"
 
-ABuildingActor::ABuildingActor()
+ABuildingActor::ABuildingActor(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer.DoNotCreateDefaultSubobject(Super::SelectableMovementComponentName))
 {
 	ActorData.ActorType = EActorType::Building;
 }

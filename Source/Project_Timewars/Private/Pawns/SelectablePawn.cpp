@@ -15,33 +15,93 @@
 #include "UObject/ConstructorHelpers.h"
 #include "TimewarsSpectatorPawn.h"
 #include "StrategyHelpers.h"
+#include "Components/ArrowComponent.h"
+#include "Engine/CollisionProfile.h"
+
+FName ASelectablePawn::MeshComponentName(TEXT("CharacterMesh0"));
+FName ASelectablePawn::SelectableMovementComponentName(TEXT("CharMoveComp"));
+FName ASelectablePawn::CapsuleComponentName(TEXT("CollisionCylinder"));
+FName ASelectablePawn::SelectionCircleName(TEXT("SelectionCircle"));
+FName ASelectablePawn::PreSelectionCircleName(TEXT("PreSelectionCircle"));
+FName ASelectablePawn::HealthbarComponentName(TEXT("HealthBar"));
 
 // Sets default values
-ASelectablePawn::ASelectablePawn()
+ASelectablePawn::ASelectablePawn(const FObjectInitializer& ObjectInitializer)
 {	
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// Create capsule for collisions
+	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(ASelectablePawn::CapsuleComponentName);
+	CapsuleComponent->InitCapsuleSize(34.0f, 88.0f);
+	CapsuleComponent->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
+
+	CapsuleComponent->CanCharacterStepUpOn = ECB_No;
+	CapsuleComponent->SetShouldUpdatePhysicsVolume(true);
+	CapsuleComponent->SetCanEverAffectNavigation(false);
+	CapsuleComponent->bDynamicObstacle = true;
+	RootComponent = CapsuleComponent;
+
+#if WITH_EDITORONLY_DATA
+	ArrowComponent = CreateEditorOnlyDefaultSubobject<UArrowComponent>(TEXT("Arrow"));
+	if (ArrowComponent)
+	{
+		ArrowComponent->ArrowColor = FColor(150, 200, 255);
+		ArrowComponent->bTreatAsASprite = true;
+		// ArrowComponent->SpriteInfo.Category = ConstructorStatics.ID_Characters;
+		// ArrowComponent->SpriteInfo.DisplayName = ConstructorStatics.NAME_Characters;
+		ArrowComponent->SetupAttachment(CapsuleComponent);
+		ArrowComponent->bIsScreenSizeScaled = true;
+	}
+#endif // WITH_EDITORONLY_DATA
+
+	SelectableMovementComponent = CreateDefaultSubobject<UPawnMovementComponent>(ASelectablePawn::SelectableMovementComponentName);
+	if (SelectableMovementComponent)
+	{
+		SelectableMovementComponent->UpdatedComponent = CapsuleComponent;
+	}
 	
 	// Actor skeletal mesh and animations
-	ActorSkeletalMesh = GetMesh();
-	ActorSkeletalMesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	Mesh = CreateOptionalDefaultSubobject<USkeletalMeshComponent>(ASelectablePawn::MeshComponentName);
+	if (Mesh)
+	{
+		Mesh->AlwaysLoadOnClient = true;
+		Mesh->AlwaysLoadOnServer = true;
+		Mesh->bOwnerNoSee = false;
+		Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
+		Mesh->bCastDynamicShadow = true;
+		Mesh->bAffectDynamicIndirectLighting = true;
+		Mesh->PrimaryComponentTick.TickGroup = TG_PrePhysics;
+		Mesh->SetupAttachment(CapsuleComponent);
+		static FName MeshCollisionProfileName(TEXT("BlockAllDynamic"));
+		Mesh->SetCollisionProfileName(MeshCollisionProfileName);
+		Mesh->SetGenerateOverlapEvents(false);
+		Mesh->SetCanEverAffectNavigation(false);
+	}
 
 	// ----------------------------------
 	// Selection circles
 	// ----------------------------------
-	SelectionCircleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionCircle"));
-	SelectionCircleComponent->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
-	SelectionCircleComponent->SetCollisionProfileName(TEXT("NoCollision"));
-	SelectionCircleComponent->SetCastShadow(false);
+	SelectionCircleComponent = CreateOptionalDefaultSubobject<UStaticMeshComponent>(ASelectablePawn::SelectionCircleName);
+	if (SelectionCircleComponent)
+	{
+		SelectionCircleComponent->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
+		SelectionCircleComponent->SetCollisionProfileName(TEXT("NoCollision"));
+		SelectionCircleComponent->SetCastShadow(false);
+		SelectionCircleComponent->SetRelativeLocation(FVector(0,0,10));
+	}
 
-	PreSelectionCircleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PreSelectionCircle"));
-	PreSelectionCircleComponent->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
-	PreSelectionCircleComponent->SetCollisionProfileName(TEXT("NoCollision"));
-	PreSelectionCircleComponent->SetCastShadow(false);
-
+	PreSelectionCircleComponent = CreateOptionalDefaultSubobject<UStaticMeshComponent>(ASelectablePawn::PreSelectionCircleName);
+	if (PreSelectionCircleComponent)
+	{
+		PreSelectionCircleComponent->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
+		PreSelectionCircleComponent->SetCollisionProfileName(TEXT("NoCollision"));
+		PreSelectionCircleComponent->SetCastShadow(false);
+		PreSelectionCircleComponent->SetRelativeLocation(FVector(0,0,10));
+	}
+	
 	for (int i=0 ; i < 6; i++)
 	{
 		FString SelPathStr = "StaticMesh'/Game/UI/Selection/S_SelectionCircle_" + FString::FromInt(i) + ".S_SelectionCircle_" + FString::FromInt(i) + "'";
@@ -61,16 +121,18 @@ ASelectablePawn::ASelectablePawn()
 	// ----------------------------------
 	// Health bar
 	// ----------------------------------
-	HealthbarComponent = CreateDefaultSubobject<UHealthBarWidgetComponent>(TEXT("HealthBar"));
-	HealthbarComponent->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
-	HealthbarComponent->SetCollisionProfileName(TEXT("NoCollision"));
+	HealthbarComponent = CreateOptionalDefaultSubobject<UHealthBarWidgetComponent>(ASelectablePawn::HealthbarComponentName);
+	if (HealthbarComponent)
+	{
+		HealthbarComponent->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
+		HealthbarComponent->SetCollisionProfileName(TEXT("NoCollision"));
+	}
 }
 
 // Called when the game starts or when spawned
 void ASelectablePawn::BeginPlay()
 {
 	Super::BeginPlay();
-	ActorSkeletalMesh = GetMesh();
 
 	ActorData.Health = ActorData.MaxHealth;
 	ActorData.Speed = ActorData.MaxSpeed;
