@@ -35,10 +35,12 @@ ASelectablePawn::ASelectablePawn()
 	SelectionCircleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionCircle"));
 	SelectionCircleComponent->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
 	SelectionCircleComponent->SetCollisionProfileName(TEXT("NoCollision"));
+	SelectionCircleComponent->SetCastShadow(false);
 
 	PreSelectionCircleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PreSelectionCircle"));
 	PreSelectionCircleComponent->AttachToComponent(ActorSkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform);
 	PreSelectionCircleComponent->SetCollisionProfileName(TEXT("NoCollision"));
+	PreSelectionCircleComponent->SetCastShadow(false);
 
 	for (int i=0 ; i < 6; i++)
 	{

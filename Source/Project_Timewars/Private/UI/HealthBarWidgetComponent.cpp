@@ -13,6 +13,8 @@ UHealthBarWidgetComponent::UHealthBarWidgetComponent()
 	ConstructorHelpers::FClassFinder<UHealthBarWidget>HealthbarWidgetClass(TEXT("/Game/UI/HealthBar/WBP_HealthBar"));
 	if (!ensure(HealthbarWidgetClass.Class != nullptr)) return;
 	WidgetClass = HealthbarWidgetClass.Class;
+	
+	SetWidgetSpace(EWidgetSpace::Screen);
 }
 
 void UHealthBarWidgetComponent::BeginPlay()
