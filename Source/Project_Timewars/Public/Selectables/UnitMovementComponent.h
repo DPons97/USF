@@ -6,6 +6,7 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "UnitMovementComponent.generated.h"
 
+class AStrategyAIController;
 /**
  * 
  */
@@ -13,5 +14,8 @@ UCLASS()
 class PROJECT_TIMEWARS_API UUnitMovementComponent : public UPawnMovementComponent
 {
 	GENERATED_BODY()
+
+public:
 	
+
 };

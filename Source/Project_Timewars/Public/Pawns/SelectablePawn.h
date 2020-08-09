@@ -7,6 +7,7 @@
 #include "GameFramework/Pawn.h"
 #include "SelectablePawn.generated.h"
 
+class AStrategyAIController;
 class UHealthBarWidgetComponent;
 class UCapsuleComponent;
 class UArrowComponent;
@@ -34,6 +35,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
     void SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner);
+
+	UFUNCTION(BlueprintCallable)
+	AStrategyAIController* GetStrategyController() const {	return StrategyAIController; }
 
 	UPROPERTY(EditDefaultsOnly)
 	FSelectableData ActorData; 
@@ -108,6 +112,8 @@ private:
     UStaticMeshComponent* PreSelectionCircleComponent;
 	
 	ATimewarsSpectatorPawn* OwnerPlayerPawn;
+
+	AStrategyAIController* StrategyAIController;
 
 	UPROPERTY(VisibleAnywhere)
     TArray<TSoftObjectPtr<UStaticMesh>> SelectionCircles;

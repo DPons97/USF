@@ -134,6 +134,11 @@ void ASelectablePawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (Controller != nullptr)
+	{
+		StrategyAIController = Cast<AStrategyAIController>(Controller);
+	}
+
 	ActorData.Health = ActorData.MaxHealth;
 	ActorData.Speed = ActorData.MaxSpeed;
 
