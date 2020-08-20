@@ -6,8 +6,10 @@
 
 #include "NavigationSystem.h"
 #include "SelectablePawn.h"
+#include "StrategyHelpers.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "TimewarsSpectatorPawn.h"
+#include "Components/CapsuleComponent.h"
 
 class ASpectatorPawn;
 
@@ -23,6 +25,8 @@ void AStrategyAIController::OnPossess(APawn* InPawn)
 	if (!ensure(BBAsset != nullptr && BTAsset != nullptr)) return;
 	UseBlackboard(BBAsset, BlackboardComponent);
 	RunBehaviorTree(BTAsset);
+
+	SelectablePawn = Cast<ASelectablePawn>(InPawn);
 }
 
 bool AStrategyAIController::SearchPath(const FVector& Destination, TArray<FVector> & OutPathPoints) const
@@ -39,13 +43,11 @@ bool AStrategyAIController::SearchPath(const FVector& Destination, TArray<FVecto
 	// Get navigation system and initialize result/agent properties
 	UWorld* World = GetWorld();
 	if (World == nullptr) return false;
-	UNavigationSystemV1* NavSys = Cast<UNavigationSystemV1>(World->GetNavigationSystem());
-
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	
 	FNavAgentProperties navAgentProperties;
-	navAgentProperties.AgentHeight = 100;
-	navAgentProperties.AgentRadius = 50;
-	navAgentProperties.bCanWalk = true;
-	navAgentProperties.bCanFly = false;
+	navAgentProperties.AgentHeight = SelectablePawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2;
+	navAgentProperties.AgentRadius = SelectablePawn->GetCapsuleComponent()->GetScaledCapsuleRadius();
 	
 	FPathFindingResult PathFindingResult;
 
@@ -58,19 +60,17 @@ bool AStrategyAIController::SearchPath(const FVector& Destination, TArray<FVecto
 		{
 			if (PathFindingResult.IsSuccessful() && PathFindingResult.Path.IsValid())
 			{
-
 				for(FNavPathPoint point : PathFindingResult.Path->GetPathPoints())
-
 				{
-
-					OutPathPoints.Add(point.Location);
-
+					auto Location = point.Location;
+					float CorrectedZCoordinate = Location.Z + SelectablePawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+			
+					OutPathPoints.Add(FVector(Location.X, Location.Y, CorrectedZCoordinate));
 				}
-
 			}
 		}
 	}
-	
+
 	return true;
 }
 
@@ -79,5 +79,3 @@ bool AStrategyAIController::CanPerformActions(ASpectatorPawn* Requestor) const
 	ASelectablePawn* PosessedPawn = Cast<ASelectablePawn>(GetPawn());
 	return Requestor == PosessedPawn->GetOwnerPlayerPawn();
 }
-
-

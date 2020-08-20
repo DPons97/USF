@@ -60,6 +60,16 @@ public:
 	}
 
 	/**
+	 *	Returns the Z value of the terrain at X,Y coordinates
+	 *	@param Point 	Cooridinate of the point the Z coordinate has to be found
+	 *	@param bDrawDebugLines	set this to true if you need to draw lines to represent the raycast for debugging purposes
+	 *	@param Controller		The UObject representing the context of the World
+	 *	
+	 */
+	UFUNCTION(BlueprintPure, meta = ( AdvancedDisplay = "bDrawDebugLines" ))
+    static float GetTerrainHeight(FVector2D Point, const UObject* Controller, bool bDrawDebugLines = false);
+
+	/**
 	 *	Get FColor from a specific ETeam value:
 	 *		- Neutral: Brown
 	 *		- Zombies: Red
@@ -74,6 +84,7 @@ public:
 	*		- Survivor: Blue/Cyan/Green/Purple
 	*/
 	static FColor GetTeamColor(ESurvivorColor::Type SurvivorColor);
+	
 private:
 	static void GetActorsInSelectionRectangle(TSubclassOf<class AActor> ClassFilter, const FVector2D& FirstPoint, const FVector2D& SecondPoint, TArray<AActor*>& OutActors, APlayerController* PC, float CameraZAngle);
 

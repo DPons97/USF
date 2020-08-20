@@ -86,29 +86,42 @@ struct FSelectableData
 	UPROPERTY(EditDefaultsOnly, Category=Data)
     float HealthRegen;
 
-	/** movement speed */
+	/** movement speed in km/h */
 	UPROPERTY(EditDefaultsOnly, Category=Data)
     int32 MaxSpeed;
 
-	/** movement speed */
+	/** movement speed in km/h */
 	UPROPERTY(EditDefaultsOnly, Category=Data)
     int32 Speed;
+
+	/** turning speed in radians/s */
+	UPROPERTY(EditDefaultsOnly, Category=Data)
+	int32 MaxTurningSpeed;
+
+	/** turning speed in radians/s */
+	UPROPERTY(EditDefaultsOnly, Category=Data)
+	int32 TurningSpeed;
 
 	/** defaults */
 	FSelectableData()
 	{
 		ActorType = EActorType::UNDEFINED;
 		OwningTeam = ETeam::Neutral;
+
 		AttackMin = 5.f;
 		AttackMax = 10.f;
 		AttackMinSiege = 2.f;
 		AttackMaxSiege = 5.f;
 		AttackDistance = 100;
 		DamageReduction = 0.f;
+
 		MaxHealth = 100.f;
 		Health = MaxHealth;
 		HealthRegen = 1.f;
+
 		MaxSpeed = 10;
 		Speed = MaxSpeed;
+		MaxTurningSpeed = 6;	
+		TurningSpeed = MaxTurningSpeed;	
 	}
 };

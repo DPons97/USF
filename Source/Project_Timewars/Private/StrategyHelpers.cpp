@@ -3,9 +3,17 @@
 
 #include "Project_Timewars/Public/StrategyHelpers.h"
 
+
+#include "AIController.h"
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
+#include "NavigationData.h"
+#include "NavigationSystem.h"
+#include "AI/NavigationSystemBase.h"
+#include "Engine/Engine.h"
 #include "GameFramework/PlayerController.h"
+
+class UNavigationSystemV1;
 
 StrategyHelpers::StrategyHelpers()
 {
@@ -214,3 +222,47 @@ bool StrategyHelpers::IsPointInsidePoly(FVector Point, const FVector Polygon[], 
     
     return InsideHorizonalBounds && InsideVerticalBounds;
 }
+
+float StrategyHelpers::GetTerrainHeight(FVector2D Point, const UObject* Controller, bool bDrawDebugLines)
+{
+    UWorld* World = GEngine->GetWorldFromContextObject(Controller, EGetWorldErrorMode::Assert);
+    if (World == nullptr) return 0.f;
+
+    FVector StartLocation{ Point.X, Point.Y, 1000 };        // Raytrace starting point.
+    FVector EndLocation{ Point.X, Point.Y, 0 };             // Raytrace end point.
+
+    // Raytrace for overlapping actors.
+    FHitResult HitResult;
+    World->LineTraceSingleByObjectType(
+        OUT HitResult,
+        StartLocation,
+        EndLocation,
+        FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),
+        FCollisionQueryParams()
+    );
+
+    // Draw debug line.
+    if (bDrawDebugLines)
+    {
+        FColor LineColor;
+
+        if (HitResult.GetActor()) LineColor = FColor::Red;
+        else LineColor = FColor::Green;
+
+        DrawDebugLine(
+            World,
+            StartLocation,
+            EndLocation,
+            LineColor,
+            true,
+            5.f,
+            0.f,
+            10.f
+        );
+    }
+
+    // Return Z location.
+    if (HitResult.GetActor()) return HitResult.ImpactPoint.Z;
+    return 0;
+}
+

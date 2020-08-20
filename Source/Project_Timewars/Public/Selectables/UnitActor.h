@@ -40,32 +40,20 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	EUnitTask GetCurrentTask() const { return CurrentTask; }
-	
-	// Receive command to move to a specific destination finding and following an optimal path
-	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation, Category="Movement")
-    void CommandNavMoveTo(const FVector& Destination);
 
-	// Receive command to start moving to a specific point
-	UFUNCTION(BlueprintCallable, Reliable, NetMulticast, Category="Movement")
-    void StartMoveTo(const FVector& FirstPoint);
+	// Receive command to move to a specific destination finding and following an optimal path
+	UFUNCTION(BlueprintCallable)
+    void MoveTo(const FVector& Destination) const;
 
 protected:
     void BeginPlay() override;
 
 	void Tick(float DeltaSeconds) override;
 
-	UFUNCTION(BlueprintCallable, Reliable, NetMulticast, Category = "Movement")
-	void AddNewPathPoint(FVector NewPoint);
-
 private:
 	EUnitTask CurrentTask;
 
-	FVector Velocity;
-
-	// Array populated with path points to be followed by movement engine
-	TArray<FVector> PathPoints;
-
-	TArray<FTimerHandle> LastPathPointsHandles;
-
 	UUnitMovementComponent* UnitMovementComponent;
+
+	
 };

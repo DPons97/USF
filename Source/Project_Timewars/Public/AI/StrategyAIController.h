@@ -40,4 +40,6 @@ protected:
 	
 	UBlackboardComponent* BlackboardComponent;
 
+private:
+	ASelectablePawn* SelectablePawn;
 };
