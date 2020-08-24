@@ -33,12 +33,19 @@ public:
 	UFUNCTION()
 	void MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination) override;
 
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentTask(enum EUnitTask NewTask) { CurrentTask = NewTask; }
+
+	UFUNCTION(BlueprintCallable)
+    EUnitTask GetCurrentTask() const { return CurrentTask; }
+
 protected:
 	void BeginPlay() override;
 	
 	void OnPossess(APawn* InPawn) override;
 
 private:
-	
-	class AUnitActor* PossessedUnit;	
+	class AUnitActor* PossessedUnit;
+
+	EUnitTask CurrentTask;
 };

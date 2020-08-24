@@ -44,10 +44,9 @@ void AUnitAIController::MouseRight(ATimewarsSpectatorPawn* Requestor, FVector de
 	if (!ensure(BlackboardComponent != nullptr)) return;
 	if (!CanPerformActions(Requestor)) return;
 	
-	//BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), destination);
-	//BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Moving);
+	BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), destination);
+	BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Moving);
 	
-	PossessedUnit->MoveTo(destination);	
-	PossessedUnit->SetCurrentTask(Moving);
+	SetCurrentTask(Moving);
 }
 

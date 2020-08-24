@@ -25,26 +25,48 @@ public:
 	UFUNCTION(Reliable, NetMulticast, Category="Movement")
     void StartMoveTo(const FVector& FirstPoint);
 
-protected:
-	UFUNCTION(Reliable, NetMulticast, Category = "Movement")
-    void AddNewPathPoint(FVector NewPoint);
+	// Receive command to stop current moving
+	UFUNCTION(Server, Reliable, WithValidation, Category="Movement")
+    void CommandNavStopMove();
+	
+	// Receive command to stop moving
+	UFUNCTION(Reliable, NetMulticast, Category="Movement")
+    void StopMoveTo();
+
+	// Synchronize actor position between clients
+	// As for now this is the simplest and a good enough solution to high lag and pkt losses.
+	// Can be optimized in future using spline interpolation or other replication features.
+	UFUNCTION(Reliable, NetMulticast, Category="Movement")
+    void SyncLocationAndRotation(const FVector& ServerLocation, const FRotator ServerRotation);
+
+	FVector GetCurrentDestination() const;
 
 public:
 	virtual void BeginPlay() override;
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
-	
 private:
 	AUnitActor * Unit;
-	
-	FVector Velocity;
 
+	float AcceptableRadius;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	float GetAcceptableRadius() const { return AcceptableRadius; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetAcceptableRadius(float NewAcceptableRadius) { AcceptableRadius = NewAcceptableRadius; }
+
+private:
 	// Array populated with path points to be followed by movement engine
 	TArray<FVector> PathPoints;
-
+	
 	TArray<FTimerHandle> LastPathPointsHandles;
 	
 	void ApplyRotation(float DeltaSeconds);
+	
 	void ApplyLocation(float DeltaSeconds);
+
+	void ClearPathPoints();
 };

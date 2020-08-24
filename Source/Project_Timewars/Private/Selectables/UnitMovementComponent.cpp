@@ -16,25 +16,24 @@ void UUnitMovementComponent::BeginPlay()
 void UUnitMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
 {
-	if (PathPoints.Num() > 0)
+	if (Unit->HasAuthority())
 	{
-		// todo tweak acceptance radius
-		if (FVector::Dist(GetActorLocation(), PathPoints[0]) > 10.f)
-		{
-			ApplyLocation(DeltaTime);
-			ApplyRotation(DeltaTime);
-		} else
+		if (PathPoints.Num() > 0 && FVector::Dist(GetActorLocation(), PathPoints[0]) < AcceptableRadius)
 		{
 			PathPoints.RemoveAt(0);
-			if (PathPoints.Num() > 0)
+
+			SyncLocationAndRotation(Unit->GetActorLocation(), Unit->GetActorRotation());
+			if (PathPoints.Num() == 0)
 			{
-				StartMoveTo(PathPoints[0]);				
+				StopMoveTo();
 			} else
 			{
-				Unit->SetCurrentTask(EUnitTask::Idle);
+				StartMoveTo(PathPoints[0]);
 			}
 		}
-	} else if (Unit->GetCurrentTask() == EUnitTask::Moving)
+	}
+	
+	if (!Velocity.IsZero())
 	{
 		ApplyLocation(DeltaTime);
 		ApplyRotation(DeltaTime);
@@ -74,49 +73,72 @@ void UUnitMovementComponent::CommandNavMoveTo_Implementation(const FVector& Dest
 	
 	TArray<FVector> resultPoints;
 	if (StrategyController->SearchPath(Destination, resultPoints) && resultPoints.Num() > 0)
-	{
-		FTimerManager& TimerManager = Unit->GetWorldTimerManager();
+	{		
+		ClearPathPoints();
 		
-		// Discard last points sending timers and empty previous path
-		for (auto handle : LastPathPointsHandles)
-		{
-			TimerManager.ClearTimer(handle);			
-		}
-		LastPathPointsHandles.Empty();
-		PathPoints.Empty();		
-
 		// Add and send new path
+		SyncLocationAndRotation(Unit->GetActorLocation(), Unit->GetActorRotation());
 		StartMoveTo(resultPoints[1]);
 		for (int i = 1; i < resultPoints.Num(); i++)
 		{
-			FTimerHandle TimerHandle;
-			Unit->GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateUObject(this, &UUnitMovementComponent::AddNewPathPoint, resultPoints[i]), 0.1f, false);
-			LastPathPointsHandles.Add(TimerHandle);
+			PathPoints.Add(resultPoints[i]);
 		}		
 	}
 }
 
 bool UUnitMovementComponent::CommandNavMoveTo_Validate(const FVector& Destination)
 {
+	// todo implement validation
 	return true;
 }
 
-void UUnitMovementComponent::StartMoveTo_Implementation(const FVector& FirstPoint)
+void UUnitMovementComponent::StartMoveTo_Implementation(const FVector& Destination)
 {
 	const FVector Location = GetActorLocation();	
-	Velocity = (FirstPoint - Location).GetSafeNormal() * (Unit->ActorData.Speed * 100 / 3.6);
-
-	// Draw velocity vector
-	// UWorld* World = GetWorld();
-	// if (World != nullptr)
-	// {
-	// 	UKismetSystemLibrary::DrawDebugArrow(World, GetActorLocation(), GetActorLocation() + Velocity, 100.f, FColor::Green, 10.f, 1.f);		
-	// }
-	
-	//UE_LOG(LogTemp, Warning, TEXT("%s"), *FirstPoint.ToString())
+	Velocity = (Destination - Location).GetSafeNormal() * (Unit->ActorData.Speed * 100 / 3.6);
 }
 
-void UUnitMovementComponent::AddNewPathPoint_Implementation(FVector NewPoint)
+void UUnitMovementComponent::CommandNavStopMove_Implementation()
 {
-	PathPoints.Add(NewPoint);
+	ClearPathPoints();
+
+	StopMoveTo();
+}
+
+bool UUnitMovementComponent::CommandNavStopMove_Validate()
+{
+	// todo implement validation
+	return true;
+}
+
+void UUnitMovementComponent::StopMoveTo_Implementation()
+{
+	Velocity = FVector::ZeroVector;
+}
+
+void UUnitMovementComponent::ClearPathPoints()
+{
+	FTimerManager& TimerManager = Unit->GetWorldTimerManager();
+		
+	// Discard last points sending timers and empty previous path
+	for (auto handle : LastPathPointsHandles)
+	{
+		TimerManager.ClearTimer(handle);			
+	}
+	LastPathPointsHandles.Empty();
+	PathPoints.Empty();
+}
+
+void UUnitMovementComponent::SyncLocationAndRotation_Implementation(const FVector& ServerLocation, const FRotator ServerRotation)
+{
+	if (!Unit->HasAuthority())
+	{
+		Unit->SetActorLocation(ServerLocation);
+		Unit->SetActorRotation(ServerRotation);
+	}
+}
+
+FVector UUnitMovementComponent::GetCurrentDestination() const
+{
+	return PathPoints.Num() > 0 ? PathPoints.Last() : GetActorLocation();
 }
