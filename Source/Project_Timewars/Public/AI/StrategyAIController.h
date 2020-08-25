@@ -25,7 +25,7 @@ public:
 	 *	@param OutPathPoints Output set of points of path
 	 *	@return true if path was found successfully	
 	 */
-	bool SearchPath(const FVector& Destination, TArray<FVector> & OutPathPoints) const;
+	bool SearchPath(const FVector& Destination, TArray<FVector> & OutPathPoints, bool DrawPath = false) const;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
     class UBlackboardData* BBAsset;

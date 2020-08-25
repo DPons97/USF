@@ -54,7 +54,7 @@ void ATimewarsPlayerController::StartSelection()
     TimewarsPawn->StartSelection();
 }
 
-void ATimewarsPlayerController::MouseRight()
+void ATimewarsPlayerController::MouseRight_Implementation()
 {
     FVector2D MousePosition;
     StrategyHelpers::GetMousePosition(MousePosition, this);
@@ -71,4 +71,10 @@ void ATimewarsPlayerController::MouseRight()
     
     // Fire animation
     MovementArrowActor->PlayAnimationAtWorldPosition(MouseToWorld);
+}
+
+bool ATimewarsPlayerController::MouseRight_Validate()
+{
+    // todo validation
+    return true;
 }

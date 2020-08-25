@@ -33,7 +33,8 @@ private:
 	void EndSelection();
 
 	void StartSelection();
-	
+
+	UFUNCTION(Server, Reliable, WithValidation, Category="Input")
 	void MouseRight();
 	
 	ATimewarsSpectatorPawn* TimewarsPawn;

@@ -12,6 +12,7 @@ AUnitActor::AUnitActor(const FObjectInitializer& ObjectInitializer) :
 	// todo add AZombieAIController
 	AIControllerClass = AUnitAIController::StaticClass();
 	ActorData.ActorType = EActorType::Unit;
+	SetActorTickEnabled(false);
 	SetReplicates(true);
 	SetReplicatingMovement(false);
 
@@ -24,15 +25,10 @@ void AUnitActor::BeginPlay()
 
 }
 
-void AUnitActor::Tick(float DeltaSeconds)
-{
-	// todo Stop ticking?	
-}
-
-void AUnitActor::MoveTo(const FVector& Destination, float AcceptableRadius) const
+void AUnitActor::MoveTo(const FVector& Destination, float AcceptableRadius, bool DrawPath) const
 {
 	UnitMovementComponent->SetAcceptableRadius(AcceptableRadius);
-	UnitMovementComponent->CommandNavMoveTo(Destination);
+	UnitMovementComponent->CommandNavMoveTo(Destination, DrawPath);
 }
 
 void AUnitActor::StopMoving() const

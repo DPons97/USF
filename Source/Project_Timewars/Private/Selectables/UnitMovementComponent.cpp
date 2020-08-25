@@ -66,13 +66,13 @@ void UUnitMovementComponent::ApplyLocation(float DeltaSeconds)
 	Unit->SetActorLocation(NewLocation);
 }
 
-void UUnitMovementComponent::CommandNavMoveTo_Implementation(const FVector& Destination)
+void UUnitMovementComponent::CommandNavMoveTo_Implementation(const FVector& Destination, bool DrawPath)
 {
 	const auto StrategyController = Unit->GetStrategyController();
 	if (StrategyController == nullptr) return;
 	
 	TArray<FVector> resultPoints;
-	if (StrategyController->SearchPath(Destination, resultPoints) && resultPoints.Num() > 0)
+	if (StrategyController->SearchPath(Destination, resultPoints, DrawPath) && resultPoints.Num() > 0)
 	{		
 		ClearPathPoints();
 		
@@ -86,7 +86,7 @@ void UUnitMovementComponent::CommandNavMoveTo_Implementation(const FVector& Dest
 	}
 }
 
-bool UUnitMovementComponent::CommandNavMoveTo_Validate(const FVector& Destination)
+bool UUnitMovementComponent::CommandNavMoveTo_Validate(const FVector& Destination, bool DrawPath)
 {
 	// todo implement validation
 	return true;

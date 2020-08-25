@@ -19,7 +19,7 @@ class PROJECT_TIMEWARS_API UUnitMovementComponent : public UPawnMovementComponen
 public:
 	// Receive command to move to a specific destination finding and following an optimal path
 	UFUNCTION(Server, Reliable, WithValidation, Category="Movement")
-    void CommandNavMoveTo(const FVector& Destination);
+    void CommandNavMoveTo(const FVector& Destination, bool DrawPath = false);
 
 	// Receive command to start moving to a specific point
 	UFUNCTION(Reliable, NetMulticast, Category="Movement")

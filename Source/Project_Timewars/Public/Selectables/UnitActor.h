@@ -37,7 +37,7 @@ public:
 
 	// Receive command to move to a specific destination finding and following an optimal path
 	UFUNCTION(BlueprintCallable, BlueprintPure=false)
-    void MoveTo(const FVector& Destination, float AcceptableRadius) const;
+    void MoveTo(const FVector& Destination, float AcceptableRadius, bool DrawPath = false) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure=false)
 	void StopMoving() const;
@@ -46,8 +46,6 @@ public:
     FVector GetCurrentDestination() const;
 protected:
     void BeginPlay() override;
-
-	void Tick(float DeltaSeconds) override;
 
 private:
 	UUnitMovementComponent* UnitMovementComponent;

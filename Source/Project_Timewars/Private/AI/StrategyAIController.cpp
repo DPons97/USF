@@ -4,6 +4,8 @@
 #include "AI/StrategyAIController.h"
 
 
+
+#include "DrawDebugHelpers.h"
 #include "NavigationSystem.h"
 #include "SelectablePawn.h"
 #include "StrategyHelpers.h"
@@ -29,7 +31,7 @@ void AStrategyAIController::OnPossess(APawn* InPawn)
 	SelectablePawn = Cast<ASelectablePawn>(InPawn);
 }
 
-bool AStrategyAIController::SearchPath(const FVector& Destination, TArray<FVector> & OutPathPoints) const
+bool AStrategyAIController::SearchPath(const FVector& Destination, TArray<FVector> & OutPathPoints, bool DrawPath) const
 {
 	// Build query for navigation system
 	FPathFindingQuery Query;
@@ -64,8 +66,14 @@ bool AStrategyAIController::SearchPath(const FVector& Destination, TArray<FVecto
 				{
 					auto Location = point.Location;
 					float CorrectedZCoordinate = Location.Z + SelectablePawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-			
-					OutPathPoints.Add(FVector(Location.X, Location.Y, CorrectedZCoordinate));
+
+					FVector CorrectedPoint(Location.X, Location.Y, CorrectedZCoordinate);
+					OutPathPoints.Add(CorrectedPoint);
+
+					if (DrawPath)
+					{
+						DrawDebugPoint(World, CorrectedPoint, 5.f, FColor::Green, false, 5.f);
+					}
 				}
 			}
 		}

@@ -19,6 +19,13 @@ class PROJECT_TIMEWARS_API UStrategySelectionComponent : public UActorComponent
 public:
 	UStrategySelectionComponent();
 
+	/**
+	 *	Get the strategy command interfaces of the current selection.
+	 *	Keep in mind: the IStrategyCommandInterface is implemented by controllers,
+	 *						therefore this method shall be only called inside the server
+	 *	@return TArray of IStrategyCommandInterface references to control currently selected actors.
+	 *			If running without Authority, returns empty array
+	 */
 	TArray<class IStrategyCommandInterface*> GetCurrentSelectionControllers();
 	
     void EndSelection();
