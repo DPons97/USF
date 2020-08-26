@@ -34,16 +34,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
     TSoftObjectPtr<UAnimationAsset> AttackingAnimation;
-
-	// Receive command to move to a specific destination finding and following an optimal path
-	UFUNCTION(BlueprintCallable, BlueprintPure=false)
-    void MoveTo(const FVector& Destination, float AcceptableRadius, bool DrawPath = false) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure=false)
-	void StopMoving() const;
-
-	UFUNCTION(BlueprintCallable)
-    FVector GetCurrentDestination() const;
+	
 protected:
     void BeginPlay() override;
 

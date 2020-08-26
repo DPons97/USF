@@ -3,12 +3,9 @@
 
 #include "AI/StrategyAIController.h"
 
-
-
 #include "DrawDebugHelpers.h"
 #include "NavigationSystem.h"
 #include "SelectablePawn.h"
-#include "StrategyHelpers.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "TimewarsSpectatorPawn.h"
 #include "Components/CapsuleComponent.h"

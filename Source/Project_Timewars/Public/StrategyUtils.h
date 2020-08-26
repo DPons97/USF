@@ -96,11 +96,11 @@ struct FSelectableData
 
 	/** turning speed in radians/s */
 	UPROPERTY(EditDefaultsOnly, Category=Data)
-	int32 MaxTurningSpeed;
+	FRotator MaxTurningSpeed;
 
 	/** turning speed in radians/s */
 	UPROPERTY(EditDefaultsOnly, Category=Data)
-	int32 TurningSpeed;
+	FRotator TurningSpeed;
 
 	/** defaults */
 	FSelectableData()
@@ -121,7 +121,7 @@ struct FSelectableData
 
 		MaxSpeed = 10;
 		Speed = MaxSpeed;
-		MaxTurningSpeed = 6;	
+		MaxTurningSpeed = FRotator(6, 6, 6);	
 		TurningSpeed = MaxTurningSpeed;	
 	}
 };

@@ -9,136 +9,144 @@
 
 void UUnitMovementComponent::BeginPlay()
 {
-	Unit = Cast<AUnitActor>(GetOwner());
-	ensure(Unit != nullptr);
+	UnitOwner = Cast<AUnitActor>(GetOwner());
+	ensure(UnitOwner != nullptr);
 }
 
 void UUnitMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
 {
-	if (Unit->HasAuthority())
-	{
-		if (PathPoints.Num() > 0 && FVector::Dist(GetActorLocation(), PathPoints[0]) < AcceptableRadius)
-		{
-			PathPoints.RemoveAt(0);
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-			SyncLocationAndRotation(Unit->GetActorLocation(), Unit->GetActorRotation());
-			if (PathPoints.Num() == 0)
-			{
-				StopMoveTo();
-			} else
-			{
-				StartMoveTo(PathPoints[0]);
-			}
+	// Make sure that everything is still valid, and that we are allowed to move.
+	if (!UnitOwner || !UpdatedComponent || ShouldSkipUpdate(DeltaTime))
+	{
+		return;
+	}
+
+	PerformMovement(DeltaTime);
+}
+
+void UUnitMovementComponent::RequestDirectMove(const FVector& MoveVelocity, bool bForceMaxSpeed)
+{
+	if (MoveVelocity.SizeSquared() < KINDA_SMALL_NUMBER)
+	{
+		return;
+	}
+	
+	Velocity = MoveVelocity;
+	bHasRequestedVelocity = true;
+
+	if (UnitOwner != nullptr) SynchronizeClients(UnitOwner->GetActorTransform(), Velocity, bHasRequestedVelocity);
+}
+
+bool UUnitMovementComponent::CanStartPathFollowing() const
+{
+	return Super::CanStartPathFollowing();
+}
+
+void UUnitMovementComponent::StopActiveMovement()
+{
+	Super::StopActiveMovement();
+
+	bHasRequestedVelocity = false;
+	Velocity = FVector::ZeroVector;
+
+	UE_LOG(LogTemp, Warning, TEXT("Stopping Move"))
+
+	if (UnitOwner != nullptr) SynchronizeClients(UnitOwner->GetActorTransform(), Velocity, bHasRequestedVelocity);
+}
+
+FRotator UUnitMovementComponent::ComputeOrientToMovementRotation(const FRotator& CurrentRotation, float DeltaTime,
+	FRotator& DeltaRotation) const
+{
+	// AI path following request can orient us in that direction (it's effectively an acceleration)
+	if (bHasRequestedVelocity && Velocity.SizeSquared() > KINDA_SMALL_NUMBER)
+	{
+		return Velocity.GetSafeNormal().Rotation();
+	}
+
+	// Don't change rotation if there is no acceleration.
+	return CurrentRotation;
+}
+
+void UUnitMovementComponent::PerformMovement(float DeltaTime)
+{	
+	if (Velocity == FVector::ZeroVector || !bHasRequestedVelocity)
+	{
+		return;
+	}
+
+	const FVector DesiredMovementThisFrame = Velocity.GetClampedToMaxSize(1.0f) * DeltaTime * (UnitOwner->ActorData.Speed * 100 / 3.6);
+	
+	if (!DesiredMovementThisFrame.IsNearlyZero())
+	{
+		FHitResult Hit;
+		SafeMoveUpdatedComponent(DesiredMovementThisFrame, UpdatedComponent->GetComponentRotation(), true, Hit);
+
+		// If we bumped into something, try to slide along it
+		if (Hit.IsValidBlockingHit())
+		{
+			SlideAlongSurface(DesiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit);
 		}
 	}
+
+	ApplyRotation(DeltaTime);		
+}
+
+void UUnitMovementComponent::SynchronizeClients_Implementation(FTransform ServerTransform, FVector ServerVelocity, bool ServerRequestedVelocity)
+{
+	UnitOwner->SetActorTransform(ServerTransform);
+	Velocity = ServerVelocity;
+	bHasRequestedVelocity = ServerRequestedVelocity;
+}
+
+void UUnitMovementComponent::ApplyRotation(float DeltaTime)
+{
+	const FRotator CurrentRotation = UpdatedComponent->GetComponentRotation(); // Normalized
+	CurrentRotation.DiagnosticCheckNaN(TEXT("UUnitMovementComponent::ApplyRotation(): CurrentRotation"));
+
+	FRotator DeltaRot = GetDeltaRotation(DeltaTime);
+	DeltaRot.DiagnosticCheckNaN(TEXT("UUnitMovementComponent::ApplyRotation(): GetDeltaRotation"));
 	
-	if (!Velocity.IsZero())
+	DesiredRotation = ComputeOrientToMovementRotation(CurrentRotation, DeltaTime, DeltaRot);
+	
+	// Accumulate a desired new rotation.
+	const float AngleTolerance = 1e-3f;
+
+	if (!CurrentRotation.Equals(DesiredRotation, AngleTolerance))
 	{
-		ApplyLocation(DeltaTime);
-		ApplyRotation(DeltaTime);
-	}
-}
-
-void UUnitMovementComponent::ApplyRotation(float DeltaSeconds)
-{
-	// Rotation
-	const FRotator RotationDiff = (Unit->GetActorRotation() - Velocity.Rotation()).Clamp();
-	if (!RotationDiff.IsNearlyZero(5.f))
-	{						
-		FRotator NewRotation = Unit->GetActorRotation();
-		const float DeltaDegrees = Unit->ActorData.TurningSpeed * DeltaSeconds * 180.f / 3.14;
-			
-		NewRotation.Yaw +=  RotationDiff.Yaw < 180.f ? - DeltaDegrees : DeltaDegrees;
-		NewRotation.Roll += RotationDiff.Roll < 180.f ? - DeltaDegrees : DeltaDegrees;
-		NewRotation.Pitch += RotationDiff.Pitch < 180.f ? - DeltaDegrees : DeltaDegrees;
-
-		// UE_LOG(LogTemp, Warning, TEXT("%s"), *NewRotation.ToString())
-
-		Unit->SetActorRotation(NewRotation);
-	}
-}
-
-void UUnitMovementComponent::ApplyLocation(float DeltaSeconds)
-{
-	// Location
-	const FVector NewLocation = GetActorLocation() + Velocity*DeltaSeconds;
-	Unit->SetActorLocation(NewLocation);
-}
-
-void UUnitMovementComponent::CommandNavMoveTo_Implementation(const FVector& Destination, bool DrawPath)
-{
-	const auto StrategyController = Unit->GetStrategyController();
-	if (StrategyController == nullptr) return;
-	
-	TArray<FVector> resultPoints;
-	if (StrategyController->SearchPath(Destination, resultPoints, DrawPath) && resultPoints.Num() > 0)
-	{		
-		ClearPathPoints();
-		
-		// Add and send new path
-		SyncLocationAndRotation(Unit->GetActorLocation(), Unit->GetActorRotation());
-		StartMoveTo(resultPoints[1]);
-		for (int i = 1; i < resultPoints.Num(); i++)
+		// PITCH
+		if (!FMath::IsNearlyEqual(CurrentRotation.Pitch, DesiredRotation.Pitch, AngleTolerance))
 		{
-			PathPoints.Add(resultPoints[i]);
-		}		
+			DesiredRotation.Pitch = FMath::FixedTurn(CurrentRotation.Pitch, DesiredRotation.Pitch, DeltaRot.Pitch);
+		}
+
+		// YAW
+		if (!FMath::IsNearlyEqual(CurrentRotation.Yaw, DesiredRotation.Yaw, AngleTolerance))
+		{
+			DesiredRotation.Yaw = FMath::FixedTurn(CurrentRotation.Yaw, DesiredRotation.Yaw, DeltaRot.Yaw);
+		}
+
+		// ROLL
+		if (!FMath::IsNearlyEqual(CurrentRotation.Roll, DesiredRotation.Roll, AngleTolerance))
+		{
+			DesiredRotation.Roll = FMath::FixedTurn(CurrentRotation.Roll, DesiredRotation.Roll, DeltaRot.Roll);
+		}
+
+		// Set the new rotation.
+		DesiredRotation.DiagnosticCheckNaN(TEXT("UUnitMovementComponent::ApplyRotation(): DesiredRotation"));
+		MoveUpdatedComponent( FVector::ZeroVector, DesiredRotation, /*bSweep*/ false );
 	}
 }
 
-bool UUnitMovementComponent::CommandNavMoveTo_Validate(const FVector& Destination, bool DrawPath)
+float GetAxisDeltaRotation(float InAxisRotationRate, float DeltaTime)
 {
-	// todo implement validation
-	return true;
+	return (InAxisRotationRate >= 0.f) ? (InAxisRotationRate * DeltaTime) : 360.f;
 }
 
-void UUnitMovementComponent::StartMoveTo_Implementation(const FVector& Destination)
+FRotator UUnitMovementComponent::GetDeltaRotation(float DeltaTime) const
 {
-	const FVector Location = GetActorLocation();	
-	Velocity = (Destination - Location).GetSafeNormal() * (Unit->ActorData.Speed * 100 / 3.6);
-}
-
-void UUnitMovementComponent::CommandNavStopMove_Implementation()
-{
-	ClearPathPoints();
-
-	StopMoveTo();
-}
-
-bool UUnitMovementComponent::CommandNavStopMove_Validate()
-{
-	// todo implement validation
-	return true;
-}
-
-void UUnitMovementComponent::StopMoveTo_Implementation()
-{
-	Velocity = FVector::ZeroVector;
-}
-
-void UUnitMovementComponent::ClearPathPoints()
-{
-	FTimerManager& TimerManager = Unit->GetWorldTimerManager();
-		
-	// Discard last points sending timers and empty previous path
-	for (auto handle : LastPathPointsHandles)
-	{
-		TimerManager.ClearTimer(handle);			
-	}
-	LastPathPointsHandles.Empty();
-	PathPoints.Empty();
-}
-
-void UUnitMovementComponent::SyncLocationAndRotation_Implementation(const FVector& ServerLocation, const FRotator ServerRotation)
-{
-	if (!Unit->HasAuthority())
-	{
-		Unit->SetActorLocation(ServerLocation);
-		Unit->SetActorRotation(ServerRotation);
-	}
-}
-
-FVector UUnitMovementComponent::GetCurrentDestination() const
-{
-	return PathPoints.Num() > 0 ? PathPoints.Last() : GetActorLocation();
+	const FRotator RotationRate = UnitOwner->ActorData.TurningSpeed * (180/PI);
+	return FRotator(GetAxisDeltaRotation(RotationRate.Pitch, DeltaTime), GetAxisDeltaRotation(RotationRate.Yaw, DeltaTime), GetAxisDeltaRotation(RotationRate.Roll, DeltaTime));
 }

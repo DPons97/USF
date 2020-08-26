@@ -30,8 +30,10 @@ public:
 	UFUNCTION()
 	void AttackUnit();
 
+	// IStrategyCommandInterface BEGIN
 	UFUNCTION()
-	void MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination) override;
+	virtual void MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination) override;
+	// IStrategyCommandInterface END
 
 	UFUNCTION(BlueprintCallable)
 	void SetCurrentTask(enum EUnitTask NewTask) { CurrentTask = NewTask; }

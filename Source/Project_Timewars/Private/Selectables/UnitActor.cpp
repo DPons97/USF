@@ -24,19 +24,3 @@ void AUnitActor::BeginPlay()
 	Super::BeginPlay();
 
 }
-
-void AUnitActor::MoveTo(const FVector& Destination, float AcceptableRadius, bool DrawPath) const
-{
-	UnitMovementComponent->SetAcceptableRadius(AcceptableRadius);
-	UnitMovementComponent->CommandNavMoveTo(Destination, DrawPath);
-}
-
-void AUnitActor::StopMoving() const
-{
-	UnitMovementComponent->CommandNavStopMove();
-}
-
-FVector AUnitActor::GetCurrentDestination() const
-{
-	return UnitMovementComponent->GetCurrentDestination();
-}

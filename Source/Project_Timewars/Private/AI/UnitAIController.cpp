@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "../AI/UnitAIController.h"
+
+#include "NavigationSystem.h"
 #include "Selectables/UnitActor.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -35,10 +37,6 @@ void AUnitAIController::OnPossess(APawn* InPawn)
 	BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), FVector(0,0,0));
 }
 
-void AUnitAIController::AttackUnit()
-{
-}
-
 void AUnitAIController::MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination)
 {
 	if (!ensure(BlackboardComponent != nullptr)) return;
@@ -48,5 +46,9 @@ void AUnitAIController::MouseRight(ATimewarsSpectatorPawn* Requestor, FVector de
 	BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Moving);
 	
 	SetCurrentTask(Moving); 
+}
+
+void AUnitAIController::AttackUnit()
+{
 }
 
