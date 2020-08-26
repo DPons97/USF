@@ -34,10 +34,10 @@ public:
 	ATimewarsSpectatorPawn* GetOwnerPlayerPawn() const { return OwnerPlayerPawn; }
 
 	UFUNCTION(BlueprintCallable)
-    void SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner);
-
-	UFUNCTION(BlueprintCallable)
 	AStrategyAIController* GetStrategyController() const {	return StrategyAIController; }
+
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category="Selection")
+    void SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner);
 
 	UPROPERTY(EditDefaultsOnly)
 	FSelectableData ActorData; 

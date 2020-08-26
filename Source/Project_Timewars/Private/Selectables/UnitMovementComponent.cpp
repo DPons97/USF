@@ -7,6 +7,11 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "UnitAIController.h"
 
+UUnitMovementComponent::UUnitMovementComponent()
+{
+	SetIsReplicatedByDefault(true);
+}
+
 void UUnitMovementComponent::BeginPlay()
 {
 	UnitOwner = Cast<AUnitActor>(GetOwner());
@@ -37,7 +42,7 @@ void UUnitMovementComponent::RequestDirectMove(const FVector& MoveVelocity, bool
 	Velocity = MoveVelocity;
 	bHasRequestedVelocity = true;
 
-	if (UnitOwner != nullptr) SynchronizeClients(UnitOwner->GetActorTransform(), Velocity, bHasRequestedVelocity);
+	if (UnitOwner != nullptr && UnitOwner->HasActorBegunPlay()) SynchronizeClients(UnitOwner->GetActorTransform(), Velocity, bHasRequestedVelocity);
 }
 
 bool UUnitMovementComponent::CanStartPathFollowing() const
@@ -52,9 +57,7 @@ void UUnitMovementComponent::StopActiveMovement()
 	bHasRequestedVelocity = false;
 	Velocity = FVector::ZeroVector;
 
-	UE_LOG(LogTemp, Warning, TEXT("Stopping Move"))
-
-	if (UnitOwner != nullptr) SynchronizeClients(UnitOwner->GetActorTransform(), Velocity, bHasRequestedVelocity);
+	if (UnitOwner != nullptr && UnitOwner->HasActorBegunPlay()) SynchronizeClients(UnitOwner->GetActorTransform(), Velocity, bHasRequestedVelocity);
 }
 
 FRotator UUnitMovementComponent::ComputeOrientToMovementRotation(const FRotator& CurrentRotation, float DeltaTime,

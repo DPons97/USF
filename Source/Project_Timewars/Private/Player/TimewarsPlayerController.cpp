@@ -24,8 +24,6 @@ ATimewarsPlayerController::ATimewarsPlayerController()
 void ATimewarsPlayerController::BeginPlay()
 {
     Super::BeginPlay();
-
-    TimewarsPawn = Cast<ATimewarsSpectatorPawn>(GetPawn());
     
     // Setup movement arrow animations     
     MovementArrowActor = GetWorld()->SpawnActor<AMovementArrowActor>(AMovementArrowActor::StaticClass(), FVector(0,0,0), FRotator(0,0,0));
@@ -42,6 +40,19 @@ void ATimewarsPlayerController::SetupInputComponent()
     InputComponent->BindAction("MouseRight", IE_Pressed, this, &ATimewarsPlayerController::MouseRight);
 }
 
+void ATimewarsPlayerController::OnPossess(APawn* aPawn)
+{
+    // OnPossess method only fires on the server
+    Super::OnPossess(aPawn);
+    
+    TimewarsPawn = Cast<ATimewarsSpectatorPawn>(aPawn);
+}
+
+void ATimewarsPlayerController::OnRep_Pawn()
+{
+    TimewarsPawn = Cast<ATimewarsSpectatorPawn>(GetPawn());
+}
+
 void ATimewarsPlayerController::EndSelection()
 {
     SelectionComponent->EndSelection();
@@ -54,7 +65,22 @@ void ATimewarsPlayerController::StartSelection()
     TimewarsPawn->StartSelection();
 }
 
-void ATimewarsPlayerController::MouseRight_Implementation()
+void ATimewarsPlayerController::GiveMovementOrder_Implementation(const TArray<ASelectablePawn*>& Selection, FVector Destination)
+{
+    // Handle movement input
+    for (auto a : SelectionComponent->GetCurrentSelectionControllers(Selection))
+    {
+        a->MouseRight(TimewarsPawn, Destination);
+    }
+}
+
+bool ATimewarsPlayerController::GiveMovementOrder_Validate(const TArray<ASelectablePawn*>& Selection, FVector Destination)
+{
+    // todo validation
+    return true;
+}
+
+void ATimewarsPlayerController::MouseRight()
 {
     FVector2D MousePosition;
     StrategyHelpers::GetMousePosition(MousePosition, this);
@@ -62,19 +88,8 @@ void ATimewarsPlayerController::MouseRight_Implementation()
     FVector MouseToWorld;
     StrategyHelpers::DeprojectPositionToWorld(MousePosition, MouseToWorld, this, ECollisionChannel::ECC_GameTraceChannel1);
 
-    
-    // Handle movement input
-    for (auto a : SelectionComponent->GetCurrentSelectionControllers())
-    {
-        a->MouseRight(TimewarsPawn, MouseToWorld);
-    }
+    GiveMovementOrder(SelectionComponent->GetCurrentSelection(), MouseToWorld);    
     
     // Fire animation
     MovementArrowActor->PlayAnimationAtWorldPosition(MouseToWorld);
-}
-
-bool ATimewarsPlayerController::MouseRight_Validate()
-{
-    // todo validation
-    return true;
 }

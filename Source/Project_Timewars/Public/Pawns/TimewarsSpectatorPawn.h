@@ -34,16 +34,12 @@ public:
 	float GetCameraZAngle();
 
 	float GetCameraHeightAngle();
-
-	class ATimewarsPlayerState* GetStrategyPlayerState() const;
 	
 protected:
 	void BeginPlay() override;
-	
+
 private:
 	UStrategyMovementComponent* StrategyMovementComponent;
-
-	ATimewarsPlayerState* StrategyPlayerState;
 	
     /** Sets up player inputs
     *    @param InputComponent - Input Component

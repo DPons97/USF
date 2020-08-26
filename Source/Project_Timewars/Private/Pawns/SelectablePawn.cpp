@@ -176,13 +176,14 @@ IStrategyCommandInterface* ASelectablePawn::GetControllerInterface()
 	return Cast<IStrategyCommandInterface>(Controller);
 }
 
-void ASelectablePawn::SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner)
+void ASelectablePawn::SetOwnerPlayerPawn_Implementation(ATimewarsSpectatorPawn* NewOwner)
 {
 	this->OwnerPlayerPawn = NewOwner;
-	
-	SelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor]));
-	PreSelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor]));
-	HealthbarComponent->SetHealthBarColor(StrategyHelpers::GetTeamColor(OwnerPlayerPawn->GetStrategyPlayerState()->TeamColor));
+
+	ATimewarsPlayerState* PS = Cast<ATimewarsPlayerState>( NewOwner->GetPlayerState());
+	SelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[PS->TeamColor]));
+	PreSelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[PS->TeamColor]));
+	HealthbarComponent->SetHealthBarColor(StrategyHelpers::GetTeamColor(PS->TeamColor));	
 }
 
 UStaticMesh* ASelectablePawn::GetLazyLoadedMesh(TSoftObjectPtr<UStaticMesh> BaseMesh)

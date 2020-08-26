@@ -7,6 +7,10 @@
 #include "Components/ActorComponent.h"
 #include "StrategySelectionComponent.generated.h"
 
+class IStrategyCommandInterface;
+class ASelectablePawn;
+
+
 /**
  * 
  */
@@ -20,13 +24,16 @@ public:
 	UStrategySelectionComponent();
 
 	/**
-	 *	Get the strategy command interfaces of the current selection.
+	 *	Get the strategy command interfaces of the passed selection.
 	 *	Keep in mind: the IStrategyCommandInterface is implemented by controllers,
 	 *						therefore this method shall be only called inside the server
+	 *	@param Selection from which to get the interfaces 						
 	 *	@return TArray of IStrategyCommandInterface references to control currently selected actors.
 	 *			If running without Authority, returns empty array
 	 */
-	TArray<class IStrategyCommandInterface*> GetCurrentSelectionControllers();
+	TArray<IStrategyCommandInterface*> GetCurrentSelectionControllers(TArray<ASelectablePawn*> Selection);
+
+	TArray<ASelectablePawn*> GetCurrentSelection() const { return SelectedActors; }
 	
     void EndSelection();
 
@@ -44,7 +51,7 @@ protected:
     float MaxSelectionApprox = 30.f;
     
 private:
-	TArray<class ASelectablePawn*> MakeSingleSelection();
+	TArray<ASelectablePawn*> MakeSingleSelection();
 	
 	TArray<ASelectablePawn*> MakeMultipleSelection();
 

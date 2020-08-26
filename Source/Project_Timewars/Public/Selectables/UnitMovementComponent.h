@@ -17,6 +17,8 @@ class PROJECT_TIMEWARS_API UUnitMovementComponent : public UPawnMovementComponen
 	GENERATED_BODY()
 
 public:
+	UUnitMovementComponent();
+	
 	virtual void BeginPlay() override;
 
 	//BEGIN UMovementComponent Interface
@@ -51,7 +53,7 @@ public:
 	void PerformMovement(float DeltaTime);
 
 	/** Replicate the next movement on the client */
-	UFUNCTION(Reliable, NetMulticast, Category="Movement")
+	UFUNCTION( Unreliable, NetMulticast, Category="Movement")
 	void SynchronizeClients(FTransform ServerTransform, FVector ServerVelocity, bool ServerRequestedVelocity);
 
 private:

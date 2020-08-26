@@ -127,12 +127,14 @@ void UStrategySelectionComponent::SelectActors(TArray<ASelectablePawn*> selected
     SelectedActors = selectedActors;
 }
 
-TArray<IStrategyCommandInterface*> UStrategySelectionComponent::GetCurrentSelectionControllers()
+TArray<IStrategyCommandInterface*> UStrategySelectionComponent::GetCurrentSelectionControllers(TArray<ASelectablePawn*> Selection)
 {
+    // todo check running on server
+        
     TArray<IStrategyCommandInterface*> controllerSelection;
     if (!GetOwner()->HasAuthority()) return controllerSelection;
 
-    for (auto a : SelectedActors)
+    for (auto a : Selection)
     {
         if (a->GetControllerInterface() != nullptr)
         {

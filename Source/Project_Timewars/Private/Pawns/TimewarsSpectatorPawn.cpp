@@ -51,8 +51,6 @@ void ATimewarsSpectatorPawn::BeginPlay()
     Super::BeginPlay();
 
     if (StrategyMovementComponent != nullptr) StrategyMovementComponent->RepositionCamera();
-
-    StrategyPlayerState = Cast<ATimewarsPlayerState>(GetPlayerState());
 }
 
 void ATimewarsSpectatorPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -92,7 +90,6 @@ void ATimewarsSpectatorPawn::StartSelection()
     if (MovementComponent == nullptr) return;
     
     Cast<UStrategyMovementComponent>(StrategyMovementComponent)->bCanMoveCamera = false;
-    
 }
 
 void ATimewarsSpectatorPawn::EndSelection()
@@ -178,9 +175,4 @@ float ATimewarsSpectatorPawn::GetCameraHeightAngle()
     if (!ensure(StrategyMovementComponent != nullptr)) return 0.f;
 
     return StrategyMovementComponent->CameraHeightAngle;
-}
-
-ATimewarsPlayerState* ATimewarsSpectatorPawn::GetStrategyPlayerState() const
-{
-    return StrategyPlayerState;
 }

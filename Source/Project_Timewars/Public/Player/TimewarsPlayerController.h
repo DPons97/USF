@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "TimewarsPlayerController.generated.h"
 
+class ASelectablePawn;
 /**
  * 
  */
@@ -17,6 +18,8 @@ class PROJECT_TIMEWARS_API ATimewarsPlayerController : public APlayerController
 
 public:
 	ATimewarsPlayerController();
+
+	virtual void OnRep_Pawn() override;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -29,13 +32,22 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Selection)
     class AMovementArrowActor* MovementArrowActor;
+
+	UPROPERTY(BlueprintReadWrite)
+	ATimewarsSpectatorPawn* TimewarsPawn;
+
+	virtual void OnPossess(APawn* aPawn) override;
 private:
 	void EndSelection();
 
 	void StartSelection();
 
-	UFUNCTION(Server, Reliable, WithValidation, Category="Input")
 	void MouseRight();
-	
-	ATimewarsSpectatorPawn* TimewarsPawn;
+
+	UFUNCTION(Server, Reliable, WithValidation, Category="Input")
+	void GiveMovementOrder(const TArray<ASelectablePawn*>& Selection, FVector Destination);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	ATimewarsSpectatorPawn* GetTimewarsPawn() const { return TimewarsPawn; }
 };
