@@ -14,6 +14,8 @@ UUnitMovementComponent::UUnitMovementComponent()
 
 void UUnitMovementComponent::BeginPlay()
 {
+	Super::BeginPlay();
+	
 	UnitOwner = Cast<AUnitActor>(GetOwner());
 	ensure(UnitOwner != nullptr);
 }

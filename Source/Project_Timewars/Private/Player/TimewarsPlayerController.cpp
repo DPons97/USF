@@ -82,6 +82,9 @@ bool ATimewarsPlayerController::GiveMovementOrder_Validate(const TArray<ASelecta
 
 void ATimewarsPlayerController::MouseRight()
 {
+    // todo Handle other right clicks
+
+    // Movement handling
     FVector2D MousePosition;
     StrategyHelpers::GetMousePosition(MousePosition, this);
 

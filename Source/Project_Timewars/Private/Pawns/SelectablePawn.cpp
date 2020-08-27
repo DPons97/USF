@@ -18,8 +18,8 @@
 #include "Components/ArrowComponent.h"
 #include "Engine/CollisionProfile.h"
 
-FName ASelectablePawn::MeshComponentName(TEXT("CharacterMesh0"));
-FName ASelectablePawn::SelectableMovementComponentName(TEXT("CharMoveComp"));
+FName ASelectablePawn::MeshComponentName(TEXT("SelectableMeshComponent"));
+FName ASelectablePawn::SelectableMovementComponentName(TEXT("SelectableMovementComponent"));
 FName ASelectablePawn::CapsuleComponentName(TEXT("CollisionCylinder"));
 FName ASelectablePawn::SelectionCircleName(TEXT("SelectionCircle"));
 FName ASelectablePawn::PreSelectionCircleName(TEXT("PreSelectionCircle"));
@@ -57,7 +57,7 @@ ASelectablePawn::ASelectablePawn(const FObjectInitializer& ObjectInitializer)
 	}
 #endif // WITH_EDITORONLY_DATA
 
-	SelectableMovementComponent = CreateDefaultSubobject<UPawnMovementComponent>(ASelectablePawn::SelectableMovementComponentName);
+	SelectableMovementComponent = CreateOptionalDefaultSubobject<UPawnMovementComponent>(ASelectablePawn::SelectableMovementComponentName);
 	if (SelectableMovementComponent)
 	{
 		SelectableMovementComponent->UpdatedComponent = CapsuleComponent;
@@ -190,7 +190,6 @@ UStaticMesh* ASelectablePawn::GetLazyLoadedMesh(TSoftObjectPtr<UStaticMesh> Base
 {
     if (BaseMesh.IsPending())
     {
-        const FSoftObjectPath& AssetRef = BaseMesh.ToSoftObjectPath();
         BaseMesh = BaseMesh.LoadSynchronous();
     }
     return BaseMesh.Get();
