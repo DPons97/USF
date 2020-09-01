@@ -44,9 +44,7 @@ void UStrategySelectionComponent::EndSelection()
 {
     TArray<ASelectablePawn*> Selection;
 
-    auto World = GetWorld();
-    if (!ensure(World != nullptr)) return;
-    if (!ensure(HUD != nullptr)) return;
+    if (HUD == nullptr) return;
 
     // Get selection endpoint
     if (!StrategyHelpers::GetMousePosition(SelectionEndPoint, PlayerController))

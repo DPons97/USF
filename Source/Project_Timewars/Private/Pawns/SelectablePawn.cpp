@@ -31,7 +31,7 @@ ASelectablePawn::ASelectablePawn(const FObjectInitializer& ObjectInitializer)
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	SetActorTickEnabled(false);
 
 	// Create capsule for collisions
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(ASelectablePawn::CapsuleComponentName);
@@ -173,6 +173,7 @@ void ASelectablePawn::SetActorPreSelected(bool isPreSelected)
 
 IStrategyCommandInterface* ASelectablePawn::GetControllerInterface()
 {
+	ensure(Controller != nullptr);
 	return Cast<IStrategyCommandInterface>(Controller);
 }
 
@@ -181,9 +182,11 @@ void ASelectablePawn::SetOwnerPlayerPawn_Implementation(ATimewarsSpectatorPawn* 
 	this->OwnerPlayerPawn = NewOwner;
 
 	ATimewarsPlayerState* PS = Cast<ATimewarsPlayerState>( NewOwner->GetPlayerState());
-	SelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[PS->TeamColor]));
-	PreSelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[PS->TeamColor]));
-	HealthbarComponent->SetHealthBarColor(StrategyHelpers::GetTeamColor(PS->TeamColor));	
+	if (PS != nullptr) {
+		SelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(SelectionCircles[PS->TeamColor]));
+		PreSelectionCircleComponent->SetStaticMesh(GetLazyLoadedMesh(PreSelectionCircles[PS->TeamColor]));
+		HealthbarComponent->SetHealthBarColor(StrategyHelpers::GetTeamColor(PS->TeamColor));	
+	}
 }
 
 UStaticMesh* ASelectablePawn::GetLazyLoadedMesh(TSoftObjectPtr<UStaticMesh> BaseMesh)

@@ -4,4 +4,3 @@
 #include "StrategyCommandInterface.h"
 
 // Add default functionality here for any IStrategyCommandInterface functions that are not pure virtual.
-

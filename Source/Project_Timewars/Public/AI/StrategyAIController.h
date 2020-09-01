@@ -18,14 +18,6 @@ class PROJECT_TIMEWARS_API AStrategyAIController : public AAIController
 
 public:
 	AStrategyAIController();
-
-	/**
-	 *	Helper function to search a valid path from pawn's current location and set destination.
-	 *	@param Destination destination point
-	 *	@param OutPathPoints Output set of points of path
-	 *	@return true if path was found successfully	
-	 */
-	bool SearchPath(const FVector& Destination, TArray<FVector> & OutPathPoints, bool DrawPath = false) const;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
     class UBlackboardData* BBAsset;

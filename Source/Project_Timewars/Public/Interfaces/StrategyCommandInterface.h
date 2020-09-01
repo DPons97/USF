@@ -22,9 +22,9 @@ class PROJECT_TIMEWARS_API IStrategyCommandInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	/* Handle Left mouse operations
-	 * @param ClickPosition -> Mouse position on click in World space
+	/** Handle Right mouse operations. Always call this method from server.
+	 * @param toLocation -> Mouse position on click in World space
+	 * @param Requestor -> Pointer to SpectatorPawn who performed the click action
 	 */
-	virtual void MouseRight(class ATimewarsSpectatorPawn* Requestor, FVector toLocation) = 0;
-
+	virtual void MouseRight(class ATimewarsSpectatorPawn* Requestor, FVector toLocation, bool bOverridePreviousAction = false) = 0;
 };

@@ -84,6 +84,11 @@ public:
 	*		- Survivor: Blue/Cyan/Green/Purple
 	*/
 	static FColor GetTeamColor(ESurvivorColor::Type SurvivorColor);
+
+	/**
+	 * 	Convert ENetRole value to string
+	 */
+	static FString NetRoleToString(ENetRole Role);
 	
 private:
 	static void GetActorsInSelectionRectangle(TSubclassOf<class AActor> ClassFilter, const FVector2D& FirstPoint, const FVector2D& SecondPoint, TArray<AActor*>& OutActors, APlayerController* PC, float CameraZAngle);

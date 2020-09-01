@@ -8,6 +8,8 @@
 #include "TimewarsPlayerController.generated.h"
 
 class ASelectablePawn;
+class USelectableGroup;
+
 /**
  * 
  */
@@ -20,6 +22,27 @@ public:
 	ATimewarsPlayerController();
 
 	virtual void OnRep_Pawn() override;
+
+	/**
+	* 	Generate movement for a given selection of pawns.
+	* 	For performance purposes, this method will perform the cast to AUnitActor internally exploiting an already
+	* 	existing for loop.
+	* 	Therefore it's important that the Selection only contains AUnitActors.
+	*/
+	UFUNCTION(Client, Reliable, Category="Input")
+    void BeginGroupMovement(const TArray<ASelectablePawn*>& Selection, FVector Destination);
+
+	UFUNCTION(Server, Reliable, WithValidation, Category="Input")
+    void OrderSimpleMovement(ASelectablePawn* PawnToMove, FVector Destination, bool bOverridePreviousMovements);
+
+	UFUNCTION(Server, Reliable, WithValidation, Category="Input")
+    void OrderPathMovement(ASelectablePawn* PawnToMove, const TArray<FVector>& Path, bool bOverridePreviousMovements);
+
+	/**
+	* 	Returns the ID of the group containing this selection of units.
+	* 	@return Group containing entire selection. nullptr if no such common group exists.
+	*/
+	USelectableGroup* GetUnitsGroup(TArray<ASelectablePawn*> Selection) const;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -43,9 +66,6 @@ private:
 	void StartSelection();
 
 	void MouseRight();
-
-	UFUNCTION(Server, Reliable, WithValidation, Category="Input")
-	void GiveMovementOrder(const TArray<ASelectablePawn*>& Selection, FVector Destination);
 
 public:
 	UFUNCTION(BlueprintCallable)

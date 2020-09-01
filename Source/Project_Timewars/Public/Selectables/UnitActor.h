@@ -6,6 +6,7 @@
 #include "Pawns/SelectablePawn.h"
 #include "UnitActor.generated.h"
 
+class USelectableGroup;
 class UAnimationAsset;
 class UAnimSequence;
 class UUnitMovementComponent;
@@ -22,23 +23,16 @@ class PROJECT_TIMEWARS_API AUnitActor : public ASelectablePawn
 public:
 	AUnitActor(const FObjectInitializer& ObjectInitializer);
 
-	// Actor meshes and animations
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-    TSoftObjectPtr<UAnimationAsset> IdleAnimation;
+	USelectableGroup* GetGroup() const { return CurrentGroup; }
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-    TSoftObjectPtr<UAnimationAsset> WalkingAnimation;
+	void SetGroup(USelectableGroup* NewGroup) { this->CurrentGroup = NewGroup; }
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-    TSoftObjectPtr<UAnimationAsset> RunningAnimation;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-    TSoftObjectPtr<UAnimationAsset> AttackingAnimation;
-	
 protected:
     void BeginPlay() override;
 
 private:
 	UUnitMovementComponent* UnitMovementComponent;
-	
+
+	// GroupID == 0 is reserved for units without a group
+	USelectableGroup* CurrentGroup;	
 };

@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "StrategyAIController.h"
 #include "StrategyCommandInterface.h"
+#include "Containers/Queue.h"
+
 #include "UnitAIController.generated.h"
 
 UENUM(BlueprintType)
@@ -14,6 +16,18 @@ enum EUnitTask
 	Moving UMETA(DisplayName = "Moving"),
 	Attacking UMETA(DisplayName = "Attacking"),
 	Building UMETA(DisplayName = "Building")
+};
+
+USTRUCT()
+struct FAction
+{
+	GENERATED_USTRUCT_BODY()
+	
+	EUnitTask ActionType;
+
+	FVector TargetLocation;
+
+	ASelectablePawn* TargetPawn = nullptr;
 };
 
 /**
@@ -31,8 +45,7 @@ public:
 	void AttackUnit();
 
 	// IStrategyCommandInterface BEGIN
-	UFUNCTION()
-	virtual void MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination) override;
+	virtual void MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination, bool bOverridePreviousAction) override;
 	// IStrategyCommandInterface END
 
 	UFUNCTION(BlueprintCallable)
@@ -41,6 +54,15 @@ public:
 	UFUNCTION(BlueprintCallable)
     EUnitTask GetCurrentTask() const { return CurrentTask; }
 
+	UFUNCTION(BlueprintCallable)
+	void ExecuteNextAction();
+
+	/**
+	 * 	Finish to execute the current action, dequeuing the action from the queue and calling ExecuteNextAction()
+	 */
+	UFUNCTION(BlueprintCallable)
+	void FinishCurrentAction();
+	
 protected:
 	void BeginPlay() override;
 	
@@ -50,4 +72,6 @@ private:
 	class AUnitActor* PossessedUnit;
 
 	EUnitTask CurrentTask;
+
+	TQueue<FAction> ActionsQueue;
 };

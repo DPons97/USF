@@ -17,6 +17,7 @@ AUnitActor::AUnitActor(const FObjectInitializer& ObjectInitializer) :
 	SetReplicatingMovement(false);
 
 	UnitMovementComponent = Cast<UUnitMovementComponent>(GetSelectableMovement());
+	CurrentGroup = nullptr;
 }
 
 void AUnitActor::BeginPlay()

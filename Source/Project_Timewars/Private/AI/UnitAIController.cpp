@@ -22,7 +22,8 @@ AUnitAIController::AUnitAIController()
 
 void AUnitAIController::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
+
 }
 
 void AUnitAIController::OnPossess(APawn* InPawn)
@@ -37,18 +38,72 @@ void AUnitAIController::OnPossess(APawn* InPawn)
 	BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), FVector(0,0,0));
 }
 
-void AUnitAIController::MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination)
-{
-	if (!ensure(BlackboardComponent != nullptr)) return;
+void AUnitAIController::MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination, bool bOverridePreviousAction)
+{	
 	if (!CanPerformActions(Requestor)) return;
+
+	// todo create new action based on type of right click
 	
-	BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), destination);
-	BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Moving);
+	FAction NewAction;
+	NewAction.ActionType = Moving;
+	NewAction.TargetLocation = destination;	
 	
-	SetCurrentTask(Moving); 
+	if (!ActionsQueue.IsEmpty()) {
+		if (bOverridePreviousAction)
+		{
+			ActionsQueue.Empty();
+			ActionsQueue.Enqueue(NewAction);
+			ExecuteNextAction();
+		} else
+		{
+			ActionsQueue.Enqueue(NewAction);		
+		}
+	} else
+	{
+		ActionsQueue.Enqueue(NewAction);
+		ExecuteNextAction();
+	}
+}
+
+void AUnitAIController::ExecuteNextAction()
+{
+	// Decode next action
+	FAction NextAction;
+	if (ActionsQueue.Peek(NextAction))
+	{
+		switch (NextAction.ActionType)
+		{
+			case Moving:
+				if (!ensure(BlackboardComponent != nullptr)) return;
+				BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), NextAction.TargetLocation);
+				BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Moving);
+		
+				SetCurrentTask(Moving);
+				break;
+			case Attacking:
+				// todo implement
+				break;
+			case Building:
+				// todo implement
+				break;
+			default:
+				UE_LOG(LogTemp, Warning, TEXT("Invalid action in queue"))
+		} 
+	}
+}
+
+void AUnitAIController::FinishCurrentAction()
+{
+	if (ActionsQueue.Pop())
+	{
+		ExecuteNextAction();		
+	} else
+	{
+		SetCurrentTask(EUnitTask::Idle);
+		BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Idle);
+	}
 }
 
 void AUnitAIController::AttackUnit()
 {
 }
-

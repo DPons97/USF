@@ -97,6 +97,23 @@ FColor StrategyHelpers::GetTeamColor(ESurvivorColor::Type SurvivorColor)
     }
 }
 
+FString StrategyHelpers::NetRoleToString(ENetRole Role)
+{
+    switch (Role)
+    {
+    case ROLE_None:
+        return "None";
+    case ROLE_SimulatedProxy:
+        return "SimulatedProxy";
+    case ROLE_AutonomousProxy:
+        return "AutonomousProxy";
+    case ROLE_Authority:
+        return "Authority";
+    default:
+        return "Error";
+    }
+}
+
 void StrategyHelpers::GetActorsInSelectionRectangle(TSubclassOf<class AActor> ClassFilter, const FVector2D& FirstPoint, const FVector2D& SecondPoint, TArray<AActor*>& OutActors, APlayerController* PC, float CameraZAngle)
 {
     // Because this is a HUD function it is likely to get called each tick,
