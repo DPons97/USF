@@ -37,7 +37,7 @@ protected:
 	
 	UBlackboardComponent* BlackboardComponent;
 
-	UObjectQueue<UStrategyAIAction*> ActionsQueue;	
+	UObjectQueue<UStrategyAIAction*> ActionsQueue;
 
 private:
 	ASelectablePawn* SelectablePawn;
