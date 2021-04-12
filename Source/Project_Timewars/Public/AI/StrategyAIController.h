@@ -6,10 +6,9 @@
 #include "AIController.h"
 #include "SelectablePawn.h"
 #include "ObjectQueue.h"
+#include "StrategyAIAction.h"
 
 #include "StrategyAIController.generated.h"
-
-class UStrategyAIAction;
 
 /**
  * 
@@ -34,11 +33,13 @@ protected:
 	void OnPossess(APawn* InPawn) override;
 
 	bool CanPerformActions(class ASpectatorPawn* Requestor) const;
-	
+
+	UPROPERTY()
 	UBlackboardComponent* BlackboardComponent;
 
 	UObjectQueue<UStrategyAIAction*> ActionsQueue;
 
 private:
+	UPROPERTY()
 	ASelectablePawn* SelectablePawn;
 };

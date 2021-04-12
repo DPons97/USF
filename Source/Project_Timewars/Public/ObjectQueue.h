@@ -18,7 +18,13 @@ class PROJECT_TIMEWARS_API UObjectQueue : public FGCObject
 public:
 	UObjectQueue() {}
 	
-	~UObjectQueue() {}
+	~UObjectQueue() 
+	{
+	    for (TypeName el : ActionsQueue)
+	    {
+		    el->ConditionalBeginDestroy();
+	    }
+	}
 
 	void Empty()
 	{
