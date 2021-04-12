@@ -3,11 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "TimewarsSpectatorPawn.h"
+#include "UnitAIAction.h"
+#include "SelectablePawn.h"
+#include "StrategyCommandInterface.h"
 #include "GameFramework/PlayerController.h"
 #include "TimewarsPlayerController.generated.h"
 
-class ASelectablePawn;
 class USelectableGroup;
 
 /**
@@ -29,20 +32,60 @@ public:
 	* 	existing for loop.
 	* 	Therefore it's important that the Selection only contains AUnitActors.
 	*/
-	UFUNCTION(Client, Reliable, Category="Input")
-    void BeginGroupMovement(const TArray<ASelectablePawn*>& Selection, FVector Destination);
-
 	UFUNCTION(Server, Reliable, WithValidation, Category="Input")
-    void OrderSimpleMovement(ASelectablePawn* PawnToMove, FVector Destination, bool bOverridePreviousMovements);
-
-	UFUNCTION(Server, Reliable, WithValidation, Category="Input")
-    void OrderPathMovement(ASelectablePawn* PawnToMove, const TArray<FVector>& Path, bool bOverridePreviousMovements);
+    void BeginGroupMovement(const TArray<AUnitActor*>& Selection, FVector Destination);
 
 	/**
 	* 	Returns the ID of the group containing this selection of units.
 	* 	@return Group containing entire selection. nullptr if no such common group exists.
 	*/
-	USelectableGroup* GetUnitsGroup(TArray<ASelectablePawn*> Selection) const;
+	USelectableGroup* GetUnitsGroup(TArray<AUnitActor*> Selection) const;
+
+	UFUNCTION(BlueprintCallable)
+    ATimewarsSpectatorPawn* GetTimewarsPawn() const { return TimewarsPawn; }
+
+	template<typename UserClass>
+    void OrderSimpleMovement(ASelectablePawn* PawnToMove, FVector Destination, UserClass* DelegateObj, bool bOverridePreviousMovements = false,
+    	typename FActionStarted::TUObjectMethodDelegate<UserClass>::FMethodPtr OnStartDelegate = nullptr,
+    	typename FActionEnded::TUObjectMethodDelegate<UserClass>::FMethodPtr OnEndDelegate = nullptr)
+	{		
+		UUnitAIAction* NewAction = UUnitAIAction::CreateAction(TimewarsPawn, EUnitActionType::MoveTo, Destination,
+        nullptr, bOverridePreviousMovements);
+		
+		if (OnStartDelegate) NewAction->BindOnActionStarted(DelegateObj, OnStartDelegate);
+		if (OnEndDelegate) NewAction->BindOnActionEnded(DelegateObj, OnEndDelegate);
+    
+		// Handle movement input
+		PawnToMove->GetControllerInterface()->EnqueueAction(NewAction);
+	}
+
+	template<typename UserClass>
+    void OrderPathMovement(ASelectablePawn* PawnToMove, const TArray<FVector>& Path, UserClass* DelegateObj, bool bOverridePreviousMovements = false,
+        typename FActionStarted::TUObjectMethodDelegate<UserClass>::FMethodPtr OnStartDelegate = nullptr,
+        typename FActionEnded::TUObjectMethodDelegate<UserClass>::FMethodPtr OnEndDelegate = nullptr)
+	{
+		if (Path.Num() == 0) return;
+		
+		UUnitAIAction* NewAction = UUnitAIAction::CreateAction(
+            TimewarsPawn, EUnitActionType::MoveTo, Path[0], nullptr, bOverridePreviousMovements);
+
+		if (OnStartDelegate) NewAction->BindOnActionStarted(DelegateObj, OnStartDelegate);
+		if (OnEndDelegate) NewAction->BindOnActionEnded(DelegateObj, OnEndDelegate);
+    
+		// Handle movement input
+		PawnToMove->GetControllerInterface()->EnqueueAction(NewAction);
+		for (int i = 1; i < Path.Num(); i++)
+		{
+			NewAction = UUnitAIAction::CreateAction(
+                TimewarsPawn,
+                EUnitActionType::MoveTo,
+                Path[i]);
+        
+			PawnToMove->GetControllerInterface()->EnqueueAction(NewAction);   
+		}    
+	}
+
+	TArray<AUnitActor*> GetSelectionAsActors();
 	
 protected:
 	virtual void BeginPlay() override;
@@ -66,8 +109,6 @@ private:
 	void StartSelection();
 
 	void MouseRight();
-
-public:
-	UFUNCTION(BlueprintCallable)
-	ATimewarsSpectatorPawn* GetTimewarsPawn() const { return TimewarsPawn; }
+	
+	void SetUnitGroup(AUnitActor* u, USelectableGroup* group);
 };

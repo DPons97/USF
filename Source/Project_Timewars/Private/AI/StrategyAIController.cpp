@@ -8,7 +8,6 @@
 #include "SelectablePawn.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "TimewarsSpectatorPawn.h"
-#include "Components/CapsuleComponent.h"
 
 class ASpectatorPawn;
 
@@ -16,6 +15,29 @@ AStrategyAIController::AStrategyAIController()
 {
 	bAttachToPawn = true;
 	SetActorTickEnabled(false);
+}
+
+FNavigationPath* AStrategyAIController::ComputePathToDestination(FVector Destination) const
+{
+	FAIMoveRequest MoveReq(Destination);
+	MoveReq.SetUsePathfinding(true);
+	MoveReq.SetAllowPartialPath(true);
+	MoveReq.SetProjectGoalLocation(false);
+	MoveReq.SetAcceptanceRadius(4.f);
+	MoveReq.SetReachTestIncludesAgentRadius(true);
+	MoveReq.SetCanStrafe(true);
+
+	FPathFindingQuery PFQuery;
+	const bool bValidQuery = BuildPathfindingQuery(MoveReq, PFQuery);
+	if (bValidQuery)
+	{
+		FNavPathSharedPtr Path;
+		FindPathForMoveRequest(MoveReq, PFQuery, Path);
+
+		return Path.Get();
+	}
+
+	return nullptr;
 }
 
 void AStrategyAIController::OnPossess(APawn* InPawn)

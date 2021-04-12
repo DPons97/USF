@@ -4,12 +4,15 @@
 
 #include "NavigationSystem.h"
 #include "Selectables/UnitActor.h"
+#include "AI/UnitAIAction.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "UObject/ConstructorHelpers.h"
-#include "TimewarsSpectatorPawn.h"
+#include "ObjectQueue.h"
 
-AUnitAIController::AUnitAIController()
+AUnitAIController::AUnitAIController() :
+	PossessedUnit(nullptr),
+	CurrentTask(EUnitTask::Idle)
 {
 	static ConstructorHelpers::FObjectFinder<UBlackboardData>BBObject(TEXT("BlackboardData'/Game/AI/Units_BB.Units_BB'"));
 	if (!ensure(BBObject.Object != nullptr)) return;
@@ -38,25 +41,29 @@ void AUnitAIController::OnPossess(APawn* InPawn)
 	BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), FVector(0,0,0));
 }
 
-void AUnitAIController::MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination, bool bOverridePreviousAction)
+void AUnitAIController::EnqueueAction(UStrategyAIAction* NewAction)
 {	
-	if (!CanPerformActions(Requestor)) return;
+	if (!CanPerformActions(NewAction->Requestor)) return;
 
 	// todo create new action based on type of right click
 	
-	FAction NewAction;
-	NewAction.ActionType = Moving;
-	NewAction.TargetLocation = destination;	
+	UUnitAIAction* UnitAction = Cast<UUnitAIAction>(NewAction);
+
+	if (!UnitAction)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Trying to queue a non-unit action to this unit"))
+		return;
+	}
 	
 	if (!ActionsQueue.IsEmpty()) {
-		if (bOverridePreviousAction)
+		if (UnitAction->bOverridePreviousAction)
 		{
 			ActionsQueue.Empty();
 			ActionsQueue.Enqueue(NewAction);
 			ExecuteNextAction();
 		} else
 		{
-			ActionsQueue.Enqueue(NewAction);		
+			ActionsQueue.Enqueue(NewAction);
 		}
 	} else
 	{
@@ -65,25 +72,37 @@ void AUnitAIController::MouseRight(ATimewarsSpectatorPawn* Requestor, FVector de
 	}
 }
 
+void AUnitAIController::SetCurrentTask(EUnitTask::Type NewTask)
+{
+	CurrentTask = NewTask;
+	BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), NewTask);
+}
+
 void AUnitAIController::ExecuteNextAction()
 {
 	// Decode next action
-	FAction NextAction;
+	UStrategyAIAction* NextAction;
+
 	if (ActionsQueue.Peek(NextAction))
 	{
-		switch (NextAction.ActionType)
-		{
-			case Moving:
-				if (!ensure(BlackboardComponent != nullptr)) return;
-				BlackboardComponent->SetValueAsVector(TEXT("NewDestination"), NextAction.TargetLocation);
-				BlackboardComponent->SetValueAsEnum(TEXT("CurrentTask"), EUnitTask::Moving);
+		if (!NextAction) return;
+		UUnitAIAction* UnitNextAction = Cast<UUnitAIAction>(NextAction);
+		if (!UnitNextAction) return;
+
+		bool bStartDelegateFired = NextAction->OnActionStartedDelegate.ExecuteIfBound(PossessedUnit);
 		
-				SetCurrentTask(Moving);
+		switch (UnitNextAction->ActionType)
+		{
+			case EUnitActionType::MoveTo:				
+				if (!ensure(BlackboardComponent != nullptr)) return;
+				BlackboardComponent->SetValueAsVector(TEXT("CurrentDestination"), UnitNextAction->TargetLocation);
+				SetCurrentTask(EUnitTask::Moving);
+			
 				break;
-			case Attacking:
+			case EUnitActionType::Attack:
 				// todo implement
 				break;
-			case Building:
+			case EUnitActionType::Build:
 				// todo implement
 				break;
 			default:
@@ -93,9 +112,24 @@ void AUnitAIController::ExecuteNextAction()
 }
 
 void AUnitAIController::FinishCurrentAction()
-{
-	if (ActionsQueue.Pop())
-	{
+{	
+	UStrategyAIAction* CurrentAction;
+	bool bEndDelegateFired;
+	
+	if (ActionsQueue.Dequeue(CurrentAction))
+	{		
+		bEndDelegateFired = CurrentAction->OnActionEndedDelegate.ExecuteIfBound(PossessedUnit);			
+
+		// Tell Garbage Collector to destroy the used action
+		if (CurrentAction && CurrentAction->IsValidLowLevel())
+			CurrentAction->ConditionalBeginDestroy();
+	}
+
+	// If unit is in idle state, it has to stay that way
+	if (CurrentTask == EUnitTask::Idle) return;
+	
+	if (ActionsQueue.Peek())
+	{		
 		ExecuteNextAction();		
 	} else
 	{

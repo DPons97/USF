@@ -6,6 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "FormationHelper.generated.h"
 
+class AUnitActor;
 /**
  * 	Base representation of a formation:
  *	-> Each 'X' is a unit of the formation
@@ -83,10 +84,10 @@ public:
 	static int GetFormationMaxUnits(uint8 FormationID);
 	
 	// Get position of a specific unit inside the group, while using the current formation, with respect to centroid's location
-	static void GetLocalUnitsPositions(TArray<ASelectablePawn*> Units, TArray<FVector>& Out_Positions, uint8 FormationID = 0);
+	static void GetLocalUnitsPositions(TArray<AUnitActor*> Units, TArray<FVector>& Out_Positions, uint8 FormationID = 0);
 
 	// Get position of a specific unit inside the group, while using the current formation, in world coordinates
-	static void GetWorldUnitsPositions(TArray<ASelectablePawn*> Units, FVector Centroid, FVector Orientation, TArray<FVector>& Out_Positions, uint8 FormationID = 0);
+	static void GetWorldUnitsPositions(TArray<AUnitActor*> Units, FVector Centroid, FVector Orientation, TArray<FVector>& Out_Positions, uint8 FormationID = 0);
 	
 private:	
 	static void DecodeFormations();

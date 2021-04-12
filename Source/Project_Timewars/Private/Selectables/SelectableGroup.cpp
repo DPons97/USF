@@ -9,6 +9,7 @@
 #include "SelectablePawn.h"
 #include "StrategyAIController.h"
 #include "TimewarsPlayerController.h"
+#include "UnitAIController.h"
 #include "Engine/World.h"
 
 USelectableGroup::USelectableGroup()
@@ -32,7 +33,7 @@ void USelectableGroup::ChooseGroupCommander()
 	float MinDist =  FVector::Dist(CurrentDestination, Units[0]->GetActorLocation());
 	for (int i = 1; i < Units.Num(); i++)
 	{
-		float CurrDist =  FVector::Dist(CurrentDestination, Units[i]->GetActorLocation());
+		const float CurrDist =  FVector::Dist(CurrentDestination, Units[i]->GetActorLocation());
 		
 		if (CurrDist < MinDist)
 		{
@@ -43,7 +44,7 @@ void USelectableGroup::ChooseGroupCommander()
 	Commander = NewCommander;
 }
 
-void USelectableGroup::AddUnits(TArray<ASelectablePawn*> NewUnits)
+void USelectableGroup::AddUnits(TArray<AUnitActor*> NewUnits)
 {	
 	const int FormationRemainingCapacity = UFormationHelper::GetFormationMaxUnits(CurrentFormationID) - Units.Num();
 	if (NewUnits.Num() > FormationRemainingCapacity)
@@ -59,7 +60,7 @@ void USelectableGroup::AddUnits(TArray<ASelectablePawn*> NewUnits)
 	Units = NewUnits;
 }
 
-bool USelectableGroup::AddUnit(ASelectablePawn* NewUnit)
+bool USelectableGroup::AddUnit(AUnitActor* NewUnit)
 {
 	const int FormationRemainingCapacity = UFormationHelper::GetFormationMaxUnits(CurrentFormationID) - Units.Num();
 	if (FormationRemainingCapacity == 0) return false;
@@ -68,9 +69,14 @@ bool USelectableGroup::AddUnit(ASelectablePawn* NewUnit)
 	return true;
 }
 
-void USelectableGroup::RemoveUnit(ASelectablePawn* ToRemove)
+void USelectableGroup::RemoveUnit(AUnitActor* ToRemove)
 {
 	Units.Remove(ToRemove);
+
+	if (Units.Num() == 0 && IsValidLowLevel())
+	{
+		ConditionalBeginDestroy();
+	}
 }
 
 FVector USelectableGroup::GetGroupOrientation()
@@ -87,70 +93,111 @@ FVector USelectableGroup::GetGroupLocation()
 	return Commander->GetActorLocation();
 }
 
+float USelectableGroup::GetTimeToDestinationWithBoost(FNavigationPath* NavPath, int UnitIdx, const float UnitSpeed, float& Distance)
+{
+	const FVector RegroupingPoint = LocalToWorldPosition(
+		UnitsPositions[UnitIdx],
+		NavPath->GetPathPoints()[1],
+		NavPath->GetSegmentDirection(1));
+
+	Distance = Units[UnitIdx]->GetStrategyController()->ComputePathToDestination(RegroupingPoint)->GetLength();
+	
+	return Distance / (UnitSpeed * GMax_Unit_Boost_Multiplier * GKmH_To_CmS);
+}
+
 void USelectableGroup::GiveMovementOrder(UWorld* World, FVector Destination)
 {
 	if (World == nullptr) return;
 	if (Units.Num() == 0 || GroupType == EGroupType::UNDEFINED) return;
 
-	// todo set MaxSpeed
-
 	CurrentDestination = Destination;
-
-	if (CurrentState != EFormationState::Formed) ChooseGroupCommander();
-
+	ChooseGroupCommander();
+	
 	ATimewarsPlayerController* PC = Cast<ATimewarsPlayerController>(World->GetFirstPlayerController());
 
-	// CLIENT_ONLY - Find Path to CurrentDestination and get first point
-	FNavigationPath* NavPath = ComputePathToDestination(Commander->GetStrategyController());
-	
+	// Find Path to CurrentDestination
+	FNavigationPath* NavPath = Commander->GetStrategyController()->ComputePathToDestination(CurrentDestination);
+
 	// Update Group orientation
-	FVector NextOrientation = NavPath->GetSegmentDirection(1);	
+	const FVector NextOrientation = NavPath->GetSegmentDirection(1);
+		
+	// Perform regrouping and then move together to destination preserving formation
+	TArray<float> Distances;
+	const float RegroupingTime = InitializeFormation(NavPath, Distances);
 
-	if (CurrentState == EFormationState::Formed)
+	for (int i = 0; i < Units.Num(); i++)
 	{
-		// Units already in formation
-		// Move all units together to current destination preserving formation	
-		for (int i = 0; i < Units.Num(); i++)
+		const float RegroupingSpeed = (Distances[i] / RegroupingTime) / GKmH_To_CmS;
+		if (RegroupingSpeed > Units[i]->GetSpeed())
 		{
-			MoveInFormation(PC, i, NavPath, true, true);		
-		}
-	} else
-	{
-		// Need to move units into formation
-
-		// Find all formation positions in world space
-		UFormationHelper::GetLocalUnitsPositions(Units, OUT UnitsPositions, 0);
-
-		for (int i = 0; i < Units.Num(); i++)
-		{			
-			PC->OrderSimpleMovement(
-				Units[i],
-				LocalToWorldPosition(UnitsPositions[i], GetGroupLocation(), NextOrientation),
-				true);
-
-			DrawDebugPoint(
-                World,
-                LocalToWorldPosition(UnitsPositions[i], GetGroupLocation(), NextOrientation),
-                10.f,
-                FColor::Green,
-                false,
-                10.f);
-
-			//	move this unit to current destination preserving formation
-			MoveInFormation(PC, i, NavPath, false, true);
+			// Use slightly boosted speed
+			Units[i]->SetBaseSpeed(RegroupingSpeed);
 		}
 		
-		// Create interception between commander and formation units while commander is moving to current destination
+		PC->OrderSimpleMovement(
+			Units[i],
+			LocalToWorldPosition(UnitsPositions[i], GetGroupLocation(), NextOrientation),
+			this,
+			true,
+			nullptr,
+			&USelectableGroup::OnUnitInPosition);
 
-		// Move all units together to each interception point
+		DrawDebugPoint(
+            World,
+            LocalToWorldPosition(UnitsPositions[i], GetGroupLocation(), NextOrientation),
+            10.f,
+            FColor::Green,
+            false,
+            10.f);
 
-		// Once all units in formation:
-		SetState(EFormationState::Formed);
+		//	move this unit to current destination preserving formation
+		MoveInFormation(PC, i, NavPath, true);
 	}
+
+	SetState(EFormationState::Forming);
+}
+
+float USelectableGroup::InitializeFormation(FNavigationPath* NavPath, TArray<float>& Out_RegroupingDistance)
+{
+	if (Units.Num() == 0) return -1.f;
+
+	// Generate units position based on the selected formation
+	UFormationHelper::GetLocalUnitsPositions(Units, OUT UnitsPositions, 0);
+	
+	// Find the slowest unit and set this group's overall max speed
+	MaxSpeed = Units[0]->GetSpeed();
+	float MaxRegroupingTime = -1.f;
+	TArray<float> Distances;
+	
+	for (int i = 0; i < Units.Num(); i++)
+	{
+		Units[i]->ResetBaseSpeed();
+		
+		// todo apply eventual speed modifiers
+		const float UnitSpeed = Units[i]->GetSpeed();
+		if (UnitSpeed < MaxSpeed)
+		{
+			MaxSpeed = Units[i]->GetSpeed();			
+		}
+
+		// Calculate time to get to this unit's position into formation
+		float RegroupingDist;
+		const float RegroupingTime = GetTimeToDestinationWithBoost(NavPath, i, UnitSpeed, RegroupingDist);
+		Distances.Add(RegroupingDist);
+
+		if (RegroupingTime > MaxRegroupingTime)
+		{
+			MaxRegroupingTime = RegroupingTime;
+		}
+	}
+
+	UnitsInPositions = 0;
+	Out_RegroupingDistance = Distances;
+	return  MaxRegroupingTime;
 }
 
 void USelectableGroup::MoveInFormation(ATimewarsPlayerController* PlayerController, int UnitIndex,
-    FNavigationPath* Path, bool bOverridePreviousMoves, bool bDrawDebugPaths)
+    FNavigationPath* Path, bool bDrawDebugPaths)
 {
 	TArray<FNavPathPoint> NavPathPoints = Path->GetPathPoints();
 
@@ -158,48 +205,27 @@ void USelectableGroup::MoveInFormation(ATimewarsPlayerController* PlayerControll
 	TArray<FVector> UnitPath;
 	for (int j = 1; j < NavPathPoints.Num(); j++)
 	{
-		UnitPath.Add(LocalToWorldPosition(
-			UnitsPositions[UnitIndex],
-			NavPathPoints[j].Location,
-			Path->GetSegmentDirection(j)
-			));
+		FVector UnitPoint = LocalToWorldPosition(
+            UnitsPositions[UnitIndex],
+            NavPathPoints[j].Location,
+            Path->GetSegmentDirection(j)
+            );
 
+		UnitPath.Add(UnitPoint);
+		
 		if (bDrawDebugPaths)
 		{
 			DrawDebugPoint(
 				PlayerController->GetWorld(),
-				UnitPath[j-1],
+				UnitPoint,
 				10.f,
 				FColor::Green,
 				false,
 				10.f);
 		}
-
-		PlayerController->OrderPathMovement(Units[UnitIndex], UnitPath, bOverridePreviousMoves);
-	}
-}
-
-FNavigationPath* USelectableGroup::ComputePathToDestination(AAIController* AIController) const
-{
-	FAIMoveRequest MoveReq(CurrentDestination);
-	MoveReq.SetUsePathfinding(true);
-	MoveReq.SetAllowPartialPath(true);
-	MoveReq.SetProjectGoalLocation(false);
-	MoveReq.SetAcceptanceRadius(4.f);
-	MoveReq.SetReachTestIncludesAgentRadius(true);
-	MoveReq.SetCanStrafe(true);
-
-	FPathFindingQuery PFQuery;
-	const bool bValidQuery = AIController->BuildPathfindingQuery(MoveReq, PFQuery);
-	if (bValidQuery)
-	{
-		FNavPathSharedPtr Path;
-		AIController->FindPathForMoveRequest(MoveReq, PFQuery, Path);
-
-		return Path.Get();
 	}
 
-	return nullptr;
+	PlayerController->OrderPathMovement(Units[UnitIndex], UnitPath, this, false);			
 }
 
 FVector USelectableGroup::LocalToWorldPosition(FVector LocalPosition, FVector Centroid, FVector Orientation)
@@ -211,4 +237,36 @@ FVector USelectableGroup::LocalToWorldPosition(FVector LocalPosition, FVector Ce
 	LocalPosition = LocalPosition + Centroid;
 
 	return LocalPosition;
+}
+
+void USelectableGroup::OnUnitInPosition(ASelectablePawn* Caller)
+{	
+	UnitsInPositions++;
+	Caller->ResetBaseSpeed();
+
+	if (UnitsInPositions == Units.Num())
+	{
+		UnitsInPositions = 0;
+		
+		for (auto u : Units)
+		{
+			Cast<AUnitAIController>(u->Controller)->ExecuteNextAction();
+		}
+		
+		SetState(EFormationState::Formed);
+	} else
+	{
+		Cast<AUnitAIController>(Caller->Controller)->SetCurrentTask(EUnitTask::Idle);
+	}
+}
+
+void USelectableGroup::BeginDestroy()
+{	
+	for (auto u : Units)
+	{
+		if (u->GetGroup() == this)
+			u->SetGroup(nullptr);
+	}
+
+	Super::BeginDestroy();
 }

@@ -3,7 +3,7 @@
 
 #include "FormationHelper.h"
 
-#include "SelectablePawn.h"
+#include "UnitActor.h"
 
 UFormationHelper::UFormationHelper()
 {
@@ -22,11 +22,11 @@ int UFormationHelper::GetFormationMaxUnits(uint8 FormationID)
 	return AvailableFormations[FormationID].GetFormationMaxUnits();
 }
 
-void UFormationHelper::GetLocalUnitsPositions(TArray<ASelectablePawn*> Units, TArray<FVector>& Out_Positions,
+void UFormationHelper::GetLocalUnitsPositions(TArray<AUnitActor*> Units, TArray<FVector>& Out_Positions,
 	uint8 FormationID)
 {
 	TArray<FVector2D> AvailablePositions = AvailableFormations[FormationID].FormationSpots;
-	TArray<ASelectablePawn*> AvailableUnits = Units;
+	TArray<AUnitActor*> AvailableUnits = Units;
 	
 	Out_Positions.SetNum(Units.Num());
 
@@ -65,7 +65,7 @@ void UFormationHelper::GetLocalUnitsPositions(TArray<ASelectablePawn*> Units, TA
 	}
 }
 
-void UFormationHelper::GetWorldUnitsPositions(TArray<ASelectablePawn*> Units, FVector Centroid, FVector Orientation,
+void UFormationHelper::GetWorldUnitsPositions(TArray<AUnitActor*> Units, FVector Centroid, FVector Orientation,
 	TArray<FVector>& Out_Positions,	uint8 FormationID)
 {
 	GetLocalUnitsPositions(Units, OUT Out_Positions, FormationID);

@@ -78,23 +78,26 @@ void ATimewarsPlayerController::MouseRight()
     StrategyHelpers::DeprojectPositionToWorld(MousePosition, MouseToWorld, this, ECollisionChannel::ECC_GameTraceChannel1);
 
     // todo differentiate on type of selection (buildings, units, resources)
-    BeginGroupMovement(SelectionComponent->GetCurrentSelection(), MouseToWorld);    
+
+    // Unit actors are only actors able to move
+    BeginGroupMovement(GetSelectionAsActors(), MouseToWorld);    
     
     // Fire animation
     MovementArrowActor->PlayAnimationAtWorldPosition(MouseToWorld);
 }
 
-void ATimewarsPlayerController::BeginGroupMovement_Implementation(const TArray<ASelectablePawn*>& Selection,
-    FVector Destination)
+void ATimewarsPlayerController::BeginGroupMovement_Implementation(const TArray<AUnitActor*>& Selection,
+                                                                  FVector Destination)
 {
     if (Selection.Num() == 0) return;
-
-    // todo Check all units belong to this controller
     
     if (Selection.Num() == 1)
     {
+        SetUnitGroup(Selection[0], nullptr);
+        Selection[0]->ResetBaseSpeed();
+        
         // Only one unit selected. Simple movement to location
-        OrderSimpleMovement(Selection[0], Destination, true);
+        OrderSimpleMovement(Selection[0], Destination, this, true);
     }
     else
     {
@@ -116,16 +119,7 @@ void ATimewarsPlayerController::BeginGroupMovement_Implementation(const TArray<A
             // Update existing groups and units with new groups associations
             for (auto a : Selection)
             {
-                AUnitActor* Unit = Cast<AUnitActor>(a);
-
-                USelectableGroup* UnitGroup = Unit->GetGroup();
-
-                if (UnitGroup)
-                {
-                    UnitGroup->RemoveUnit(Unit);
-                }
-                
-                Unit->SetGroup(NewGroup);
+                SetUnitGroup(a, NewGroup);
             }
             
             NewGroup->GiveMovementOrder(GetWorld(), Destination);
@@ -133,49 +127,21 @@ void ATimewarsPlayerController::BeginGroupMovement_Implementation(const TArray<A
     }
 }
 
-void ATimewarsPlayerController::OrderSimpleMovement_Implementation(ASelectablePawn* PawnToMove, FVector Destination,
-    bool bOverridePreviousMovements)
+bool ATimewarsPlayerController::BeginGroupMovement_Validate(const TArray<AUnitActor*>& Selection,
+    FVector Destination)
 {
-    // Handle movement input
-    PawnToMove->GetControllerInterface()->MouseRight(TimewarsPawn, Destination, bOverridePreviousMovements);
-}
-
-bool ATimewarsPlayerController::OrderSimpleMovement_Validate(ASelectablePawn* PawnToMove, FVector Destination,
-    bool bOverridePreviousMovements)
-{
-    // todo validation
+    // todo Check all units belong to this controller + additional validation
     return true;
 }
 
-
-void ATimewarsPlayerController::OrderPathMovement_Implementation(ASelectablePawn* PawnToMove, const TArray<FVector>& Path,
-    bool bOverridePreviousMovements)
+USelectableGroup* ATimewarsPlayerController::GetUnitsGroup(TArray<AUnitActor*> Selection) const
 {
-    if (Path.Num() == 0) return;
-    
-    // Handle movement input
-    PawnToMove->GetControllerInterface()->MouseRight(TimewarsPawn, Path[0], bOverridePreviousMovements);
-    for (int i = 1; i < Path.Num(); i++)
-    {
-        PawnToMove->GetControllerInterface()->MouseRight(TimewarsPawn, Path[i], false);   
-    }    
-}
-
-bool ATimewarsPlayerController::OrderPathMovement_Validate(ASelectablePawn* PawnToMove, const TArray<FVector>& Path,
-    bool bOverridePreviousMovements)
-{
-    // todo validation
-    return true;
-}
-
-USelectableGroup* ATimewarsPlayerController::GetUnitsGroup(TArray<ASelectablePawn*> Selection) const
-{
-    USelectableGroup* ExistingGroup = Cast<AUnitActor>(Selection[0])->GetGroup();
+    USelectableGroup* ExistingGroup = Selection[0]->GetGroup();
     if (!ExistingGroup) return nullptr;
     
     for (auto Unit : Selection)
     {
-        const USelectableGroup* UnitGroup = Cast<AUnitActor>(Unit)->GetGroup(); 
+        const USelectableGroup* UnitGroup = Unit->GetGroup(); 
             
         if (UnitGroup != ExistingGroup)
         {
@@ -184,5 +150,29 @@ USelectableGroup* ATimewarsPlayerController::GetUnitsGroup(TArray<ASelectablePaw
         }
     }
     
-    return ExistingGroup;
+    return Selection.Num() == ExistingGroup->GetNumberUnits() ? ExistingGroup : nullptr;
+}
+
+TArray<AUnitActor*> ATimewarsPlayerController::GetSelectionAsActors()
+{
+    TArray<ASelectablePawn*> Selection = SelectionComponent->GetCurrentSelection();
+    TArray<AUnitActor*> UnitsSel;
+
+    for (auto u : Selection)
+    {
+        UnitsSel.Add(Cast<AUnitActor>(u));
+    }
+    return UnitsSel;
+}
+
+void ATimewarsPlayerController::SetUnitGroup(AUnitActor* u, USelectableGroup* group)
+{
+    USelectableGroup* UnitGroup = u->GetGroup();
+
+    if (UnitGroup)
+    {
+        UnitGroup->RemoveUnit(u);
+    }
+                
+    u->SetGroup(group);
 }

@@ -23,16 +23,11 @@ class PROJECT_TIMEWARS_API AUnitActor : public ASelectablePawn
 public:
 	AUnitActor(const FObjectInitializer& ObjectInitializer);
 
-	USelectableGroup* GetGroup() const { return CurrentGroup; }
-
-	void SetGroup(USelectableGroup* NewGroup) { this->CurrentGroup = NewGroup; }
+	virtual FVector GetVelocity() const override;
 
 protected:
     void BeginPlay() override;
-
+	
 private:
 	UUnitMovementComponent* UnitMovementComponent;
-
-	// GroupID == 0 is reserved for units without a group
-	USelectableGroup* CurrentGroup;	
 };

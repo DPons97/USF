@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "UnitActor.h"
 #include "UObject/NoExportTypes.h"
 #include "SelectableGroup.generated.h"
 
@@ -15,12 +17,15 @@
  * 	such types.
  */
 UENUM()
-enum EGroupType
+namespace EGroupType
 {
-	UNDEFINED,
-	Units,
-	Hybrid
-};
+	enum Type
+	{
+		UNDEFINED,
+	    Units,
+	    Hybrid
+	};
+}
 
 /**
 *	 EFormationState::Broken means that the formation isn't formed and isn't trying to form.
@@ -30,12 +35,19 @@ enum EGroupType
 *	 Once all of our units are in their desired positions, we change the formation state to EFormationState::Formed.
 */
 UENUM()
-enum EFormationState
+namespace EFormationState
 {
-	Broken,
-    Forming,
-    Formed
-};
+	enum Type
+	{
+		Broken,
+		Forming,
+		Formed
+	};
+}
+
+const float GMax_Unit_Boost_Multiplier = 1.5;
+const float GMax_Unit_Slow_Multiplier = 0.33;
+const float GKmH_To_CmS = 100 / 3.6;
 
 // Forward declarations
 class ASelectablePawn;
@@ -53,13 +65,27 @@ public:
 	USelectableGroup();
 
 	// Returns the type of this group (see EGroupType)
-	EGroupType GetType() const { return GroupType; }
-	void SetType( EGroupType Type ) { GroupType = Type; }
+	EGroupType::Type GetType() const { return GroupType; }
+	void SetType( EGroupType::Type Type ) { GroupType = Type; }
 
 	/**
 	 * @return The maximum speed of the group (the speed of the slowest unit)
 	 */
 	float GetMaxSpeed() const { return MaxSpeed; }
+
+	/***
+	 * 	Computes this group's max speed, all the units positions inside the formation and returns the maximum time
+	 * 	this group will take to regroup into the selected formation.
+	 * 	Such regrouping will finish on the first intermediate path point to the destination. (if no intermediate points,
+	 * 	the regrouping is performed on the arrival at the destination)
+	 * 	todo can generate an additional intermediate point in the first path segment
+	 *
+	 * 	@param NavPath the navigation path this group has to perform
+	 * 	@param Out_RegroupingDistance times, for each unit, taken to arrive at regrouping point
+	 */
+	float InitializeFormation(FNavigationPath* NavPath, TArray<float>& Out_RegroupingDistance);
+
+	float GetTimeToDestinationWithBoost(FNavigationPath* NavPath, int UnitIdx, float UnitSpeed, float& Distance);
 
 	/**
 	 *	Choose the new commander of this group.
@@ -76,19 +102,19 @@ public:
 	void SetFormationID( uint8 FormationID ) { CurrentFormationID = FormationID; }
 	uint8 GetCurrentFormationID() const { return CurrentFormationID; }
 
-	EFormationState GetState() const { return CurrentState; }
-	void SetState( EFormationState NewState ) { CurrentState = NewState; }
+	EFormationState::Type GetState() const { return CurrentState; }
+	void SetState( EFormationState::Type NewState ) { CurrentState = NewState; }
 
 	// Basic unit addition and removal functions.
 
-	void AddUnits(TArray<ASelectablePawn*> NewUnits);
+	void AddUnits(TArray<AUnitActor*> NewUnits);
 
 	/**
 	 * 	@return false if no more space is available in the current formation
 	 */
-	bool AddUnit( ASelectablePawn* NewUnit );
+	bool AddUnit( AUnitActor* NewUnit );
 
-	void RemoveUnit( ASelectablePawn* ToRemove );
+	void RemoveUnit( AUnitActor* ToRemove );
 
 	int GetNumberUnits() const { return Units.Num(); }
 
@@ -103,28 +129,37 @@ public:
 	// GROUP ORDERS
 	/**
 	 * 	Give this group of units an order to move while using the currently selected formation
-	 * 	First, each unit will be given order to regroup and take its place inside the formation.
-	 * 	Then the whole group will move to the target.
-	 *
-	 * 	todo Regrouping asynchronously while moving
+	 * 	First, each unit will be given order to regroup and take its place inside the formation, meanwhile the
+	 * 	already-in-place units will start to move to the target
 	 */
 	void GiveMovementOrder(UWorld* World, FVector Destination);
 
-	void MoveInFormation(ATimewarsPlayerController* PlayerController, int UnitIndex, FNavigationPath* Path, bool bOverridePreviousMoves,
-		bool bDrawDebugPaths = false);
-
-	FNavigationPath* ComputePathToDestination(AAIController* AIController) const;
+	/**
+	 * 	Enqueues (without overriding the previous actions) the given path to the selected unit preserving its position
+	 * 	in the formation
+	 */
+	void MoveInFormation(ATimewarsPlayerController* PlayerController, int UnitIndex, FNavigationPath* Path,
+							bool bDrawDebugPaths = false);
 
 	static FVector LocalToWorldPosition(FVector LocalPosition, FVector Centroid, FVector Orientation);
 
+	/**
+	 * 	Function called when unit is in its positions inside the formation
+	 * 	(still not in the right relative position to the commander)
+	 */
+	void OnUnitInPosition(ASelectablePawn* Caller);
+
+	// todo on destroy group reset all units' speeds to MaxSpeed
+
+	virtual void BeginDestroy() override;
 protected:
 	// List of all units belonging to this group
-	TArray<ASelectablePawn*> Units;
+	TArray<AUnitActor*> Units;
 
 	// Position of each unit relative to the centroid of the currently selected formation
 	TArray<FVector> UnitsPositions;  
 	
-	EGroupType GroupType;
+	EGroupType::Type GroupType;
 		
 	float MaxSpeed;
 	
@@ -132,7 +167,10 @@ protected:
 
 	uint8 CurrentFormationID;
 
-	EFormationState CurrentState;
+	EFormationState::Type CurrentState;
 
 	FVector CurrentDestination;
+
+	// Amount of units that took their position in the formation
+	int UnitsInPositions = 0;
 };

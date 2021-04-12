@@ -86,11 +86,11 @@ struct FSelectableData
 	UPROPERTY(EditDefaultsOnly, Category=Data)
     float HealthRegen;
 
-	/** movement speed in km/h */
+	/** default base movement speed in km/h */
 	UPROPERTY(EditDefaultsOnly, Category=Data)
     int32 MaxSpeed;
 
-	/** movement speed in km/h */
+	/** current base movement speed in km/h, not considering modifiers */
 	UPROPERTY(EditDefaultsOnly, Category=Data)
     int32 Speed;
 

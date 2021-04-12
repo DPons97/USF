@@ -13,6 +13,7 @@ class UCapsuleComponent;
 class UArrowComponent;
 class IStrategyCommandInterface;
 class ATimewarsSpectatorPawn;
+class USelectableGroup;
 
 UCLASS()
 class PROJECT_TIMEWARS_API ASelectablePawn :
@@ -40,7 +41,10 @@ public:
     void SetOwnerPlayerPawn(ATimewarsSpectatorPawn* NewOwner);
 
 	UPROPERTY(EditDefaultsOnly)
-	FSelectableData ActorData; 
+	FSelectableData ActorData;
+
+	UPROPERTY()
+	USelectableGroup* CurrentGroup;	
 
 protected:
     // Called when the game starts or when spawned
@@ -122,5 +126,16 @@ private:
 	TArray<TSoftObjectPtr<UStaticMesh>> PreSelectionCircles;
 
 	static UStaticMesh* GetLazyLoadedMesh(TSoftObjectPtr<UStaticMesh> BaseMesh);
+
+public:
+	float GetSpeed();
+
+	void SetBaseSpeed(float NewBaseSpeed);
+
+	void ResetBaseSpeed();
+
+	USelectableGroup* GetGroup() const { return CurrentGroup; }
+
+	void SetGroup(USelectableGroup* NewGroup) { this->CurrentGroup = NewGroup; }
 
 };

@@ -5,30 +5,20 @@
 #include "CoreMinimal.h"
 #include "StrategyAIController.h"
 #include "StrategyCommandInterface.h"
-#include "Containers/Queue.h"
 
 #include "UnitAIController.generated.h"
 
 UENUM(BlueprintType)
-enum EUnitTask
+namespace EUnitTask
 {
-	Idle UMETA(DisplayName = "Idle"),
-	Moving UMETA(DisplayName = "Moving"),
-	Attacking UMETA(DisplayName = "Attacking"),
-	Building UMETA(DisplayName = "Building")
-};
-
-USTRUCT()
-struct FAction
-{
-	GENERATED_USTRUCT_BODY()
-	
-	EUnitTask ActionType;
-
-	FVector TargetLocation;
-
-	ASelectablePawn* TargetPawn = nullptr;
-};
+	enum Type
+	{
+		Idle UMETA(DisplayName = "Idle"),
+	    Moving UMETA(DisplayName = "Moving"),
+	    Attacking UMETA(DisplayName = "Attacking"),
+	    Building UMETA(DisplayName = "Building")
+	};
+}
 
 /**
  * 
@@ -45,14 +35,14 @@ public:
 	void AttackUnit();
 
 	// IStrategyCommandInterface BEGIN
-	virtual void MouseRight(ATimewarsSpectatorPawn* Requestor, FVector destination, bool bOverridePreviousAction) override;
+	virtual void EnqueueAction(UStrategyAIAction* NewAction) override;
 	// IStrategyCommandInterface END
 
 	UFUNCTION(BlueprintCallable)
-	void SetCurrentTask(enum EUnitTask NewTask) { CurrentTask = NewTask; }
+	void SetCurrentTask(EUnitTask::Type NewTask);
 
 	UFUNCTION(BlueprintCallable)
-    EUnitTask GetCurrentTask() const { return CurrentTask; }
+    EUnitTask::Type GetCurrentTask() const { return CurrentTask; }
 
 	UFUNCTION(BlueprintCallable)
 	void ExecuteNextAction();
@@ -69,9 +59,8 @@ protected:
 	void OnPossess(APawn* InPawn) override;
 
 private:
+	UPROPERTY()
 	class AUnitActor* PossessedUnit;
 
-	EUnitTask CurrentTask;
-
-	TQueue<FAction> ActionsQueue;
+	EUnitTask::Type CurrentTask;
 };

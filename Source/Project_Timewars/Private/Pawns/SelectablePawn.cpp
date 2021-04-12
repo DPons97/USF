@@ -197,3 +197,19 @@ UStaticMesh* ASelectablePawn::GetLazyLoadedMesh(TSoftObjectPtr<UStaticMesh> Base
     }
     return BaseMesh.Get();
 }
+
+float ASelectablePawn::GetSpeed()
+{
+	// todo apply modifiers
+	return ActorData.Speed;
+}
+
+void ASelectablePawn::SetBaseSpeed(float NewBaseSpeed)
+{
+	ActorData.Speed = NewBaseSpeed;
+}
+
+void ASelectablePawn::ResetBaseSpeed()
+{
+	ActorData.Speed = ActorData.MaxSpeed;
+}

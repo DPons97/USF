@@ -5,8 +5,11 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "SelectablePawn.h"
+#include "ObjectQueue.h"
 
 #include "StrategyAIController.generated.h"
+
+class UStrategyAIAction;
 
 /**
  * 
@@ -25,12 +28,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
     class UBehaviorTree* BTAsset;
 
+	FNavigationPath* ComputePathToDestination(FVector Destination) const;
+
 protected:
 	void OnPossess(APawn* InPawn) override;
 
 	bool CanPerformActions(class ASpectatorPawn* Requestor) const;
 	
 	UBlackboardComponent* BlackboardComponent;
+
+	UObjectQueue<UStrategyAIAction*> ActionsQueue;	
 
 private:
 	ASelectablePawn* SelectablePawn;

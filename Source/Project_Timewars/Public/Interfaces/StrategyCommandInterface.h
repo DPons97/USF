@@ -26,5 +26,5 @@ public:
 	 * @param toLocation -> Mouse position on click in World space
 	 * @param Requestor -> Pointer to SpectatorPawn who performed the click action
 	 */
-	virtual void MouseRight(class ATimewarsSpectatorPawn* Requestor, FVector toLocation, bool bOverridePreviousAction = false) = 0;
+	virtual void EnqueueAction(class UStrategyAIAction* NewAction) = 0;
 };

@@ -3,6 +3,8 @@
 
 #include "Selectables/UnitActor.h"
 
+
+#include "SelectableGroup.h"
 #include "UnitAIController.h"
 #include "Selectables/UnitMovementComponent.h"
 
@@ -20,8 +22,13 @@ AUnitActor::AUnitActor(const FObjectInitializer& ObjectInitializer) :
 	CurrentGroup = nullptr;
 }
 
+FVector AUnitActor::GetVelocity() const
+{
+	const UPawnMovementComponent* MovementComponent = GetMovementComponent();
+	return MovementComponent ? MovementComponent->Velocity * ActorData.Speed : FVector::ZeroVector;
+}
+
 void AUnitActor::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
