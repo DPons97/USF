@@ -3,8 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
-#include "TimewarsSpectatorPawn.h"
 #include "UnitAIAction.h"
 #include "SelectablePawn.h"
 #include "StrategyCommandInterface.h"

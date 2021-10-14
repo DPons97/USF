@@ -14,7 +14,6 @@ class PROJECT_TIMEWARS_API UHealthBarWidgetComponent : public UWidgetComponent
 {
 	GENERATED_BODY()
 
-
 public:
 	UHealthBarWidgetComponent();
 

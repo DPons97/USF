@@ -93,16 +93,30 @@ FVector USelectableGroup::GetGroupLocation()
 	return Commander->GetActorLocation();
 }
 
-float USelectableGroup::GetTimeToDestinationWithBoost(FNavigationPath* NavPath, int UnitIdx, const float UnitSpeed, float& Distance)
+/**
+ *	@param NavPath navigation path of formation
+ *	@param UnitIdx index of unit that has to reach the regrouping point
+ *	@param UnitSpeed base speed of this unit
+ *	@param OutDistance output: total distance from this unit's position to regrouping point 
+ */
+float USelectableGroup::GetTimeToDestinationWithBoost(FNavPathSharedPtr NavPath, int UnitIdx, const float UnitSpeed, float& OutDistance)
 {
 	const FVector RegroupingPoint = LocalToWorldPosition(
 		UnitsPositions[UnitIdx],
 		NavPath->GetPathPoints()[1],
 		NavPath->GetSegmentDirection(1));
 
-	Distance = Units[UnitIdx]->GetStrategyController()->ComputePathToDestination(RegroupingPoint)->GetLength();
-	
-	return Distance / (UnitSpeed * GMax_Unit_Boost_Multiplier * GKmH_To_CmS);
+	FNavPathSharedPtr UnitPath;
+	Units[UnitIdx]->GetStrategyController()->ComputePathToDestination(RegroupingPoint, UnitPath);
+
+	if (UnitPath.IsValid())
+	{
+		OutDistance = UnitPath->GetLength();
+		return OutDistance / (UnitSpeed * GMax_Unit_Boost_Multiplier * GKmH_To_CmS);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Could not compute time to regrouping point with boost"))
+	return 0.0f;
 }
 
 void USelectableGroup::GiveMovementOrder(UWorld* World, FVector Destination)
@@ -116,10 +130,12 @@ void USelectableGroup::GiveMovementOrder(UWorld* World, FVector Destination)
 	ATimewarsPlayerController* PC = Cast<ATimewarsPlayerController>(World->GetFirstPlayerController());
 
 	// Find Path to CurrentDestination
-	FNavigationPath* NavPath = Commander->GetStrategyController()->ComputePathToDestination(CurrentDestination);
+	FNavPathSharedPtr NavPath;
+	Commander->GetStrategyController()->ComputePathToDestination(CurrentDestination, NavPath);
+	if (!NavPath.IsValid()) return; 
 
 	// Update Group orientation
-	const FVector NextOrientation = NavPath->GetSegmentDirection(1);
+	const FVector NextOrientation = NavPath.Get()->GetSegmentDirection(1);
 		
 	// Perform regrouping and then move together to destination preserving formation
 	TArray<float> Distances;
@@ -151,13 +167,13 @@ void USelectableGroup::GiveMovementOrder(UWorld* World, FVector Destination)
             10.f);
 
 		//	move this unit to current destination preserving formation
-		MoveInFormation(PC, i, NavPath, true);
+		MoveInFormation(PC, i, NavPath.Get(), true);
 	}
 
 	SetState(EFormationState::Forming);
 }
 
-float USelectableGroup::InitializeFormation(FNavigationPath* NavPath, TArray<float>& Out_RegroupingDistance)
+float USelectableGroup::InitializeFormation(FNavPathSharedPtr NavPath, TArray<float>& Out_RegroupingDistance)
 {
 	if (Units.Num() == 0) return -1.f;
 

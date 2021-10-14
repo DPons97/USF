@@ -17,7 +17,7 @@ AStrategyAIController::AStrategyAIController()
 	SetActorTickEnabled(false);
 }
 
-FNavigationPath* AStrategyAIController::ComputePathToDestination(FVector Destination) const
+void AStrategyAIController::ComputePathToDestination(const FVector Destination, FNavPathSharedPtr& OutPath) const
 {
 	FAIMoveRequest MoveReq(Destination);
 	MoveReq.SetUsePathfinding(true);
@@ -30,14 +30,7 @@ FNavigationPath* AStrategyAIController::ComputePathToDestination(FVector Destina
 	FPathFindingQuery PFQuery;
 	const bool bValidQuery = BuildPathfindingQuery(MoveReq, PFQuery);
 	if (bValidQuery)
-	{
-		FNavPathSharedPtr Path;
-		FindPathForMoveRequest(MoveReq, PFQuery, Path);
-
-		return Path.Get();
-	}
-
-	return nullptr;
+		FindPathForMoveRequest(MoveReq, PFQuery, OutPath);
 }
 
 void AStrategyAIController::OnPossess(APawn* InPawn)

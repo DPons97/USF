@@ -27,7 +27,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
     class UBehaviorTree* BTAsset;
 
-	FNavigationPath* ComputePathToDestination(FVector Destination) const;
+	void ComputePathToDestination(const FVector Destination, FNavPathSharedPtr& OutPath) const;
 
 protected:
 	void OnPossess(APawn* InPawn) override;

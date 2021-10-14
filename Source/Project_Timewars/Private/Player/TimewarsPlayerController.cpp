@@ -9,7 +9,6 @@
 #include "TimewarsSpectatorPawn.h"
 #include "UnitActor.h"
 #include "UnitAIController.h"
-#include "Components/StaticMeshComponent.h"
 #include "UI/MovementArrowActor.h"
 
 ATimewarsPlayerController::ATimewarsPlayerController()

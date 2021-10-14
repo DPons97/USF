@@ -25,8 +25,9 @@ void UHealthBarWidgetComponent::BeginPlay()
 	if (World == nullptr) return;
 	CameraManager = World->GetFirstPlayerController()->PlayerCameraManager;
 
-	if (Widget == nullptr) return;
-	HealthbarWidget = Cast<UHealthBarWidget>(Widget);
+	UUserWidget* uw = GetWidget();
+	if (uw == nullptr) return;
+	HealthbarWidget = Cast<UHealthBarWidget>(uw);
 	if (HealthbarWidget == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Healthbar widget is of wrong class!"))
@@ -54,7 +55,7 @@ void UHealthBarWidgetComponent::SetHealthBarColor(FColor Color)
 
 void UHealthBarWidgetComponent::RotateToFaceCamera()
 {
-	if (Widget == nullptr || CameraManager == nullptr) return;
+	if (GetWidget() == nullptr || CameraManager == nullptr) return;
 
 	const FVector CameraLoc = CameraManager->GetCameraLocation();
 	const FVector FacingVector = CameraLoc - GetComponentLocation();

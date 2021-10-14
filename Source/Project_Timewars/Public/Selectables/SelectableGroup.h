@@ -80,12 +80,12 @@ public:
 	 * 	the regrouping is performed on the arrival at the destination)
 	 * 	todo can generate an additional intermediate point in the first path segment
 	 *
-	 * 	@param NavPath the navigation path this group has to perform
+	 * 	@param NavPath the navigation path this group has to perform (shared ptr)
 	 * 	@param Out_RegroupingDistance times, for each unit, taken to arrive at regrouping point
 	 */
-	float InitializeFormation(FNavigationPath* NavPath, TArray<float>& Out_RegroupingDistance);
+	float InitializeFormation(FNavPathSharedPtr NavPath, TArray<float>& Out_RegroupingDistance);
 
-	float GetTimeToDestinationWithBoost(FNavigationPath* NavPath, int UnitIdx, float UnitSpeed, float& Distance);
+	float GetTimeToDestinationWithBoost(FNavPathSharedPtr NavPath, int UnitIdx, float UnitSpeed, float& OutDistance);
 
 	/**
 	 *	Choose the new commander of this group.
