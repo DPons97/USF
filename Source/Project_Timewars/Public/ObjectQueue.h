@@ -9,7 +9,7 @@
 /**
  *	Thread-safe queue data structure based on TArrays.
  *	This class differs from UE4 TQueue mainly for what concerns the garbage collection.
- *	Indeed, items in this queue are not garbage collected automatically (similar to UPROPERTY() effect). Due to this fact, they also MUST BE deleted manually (ConditionalBeginDestroy()).
+ *	Indeed, items in this queue are not garbage collected automatically (similar to UPROPERTY() effect).
  */
 template<typename TypeName>
 class PROJECT_TIMEWARS_API UObjectQueue : public FGCObject

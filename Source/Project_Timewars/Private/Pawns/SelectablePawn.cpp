@@ -33,7 +33,9 @@ ASelectablePawn::ASelectablePawn(const FObjectInitializer& ObjectInitializer)
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	SetActorTickEnabled(false);
 
+	// ----------------------------------
 	// Create capsule for collisions
+	// ----------------------------------
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(ASelectablePawn::CapsuleComponentName);
 	CapsuleComponent->InitCapsuleSize(34.0f, 88.0f);
 	CapsuleComponent->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
@@ -62,8 +64,10 @@ ASelectablePawn::ASelectablePawn(const FObjectInitializer& ObjectInitializer)
 	{
 		SelectableMovementComponent->UpdatedComponent = CapsuleComponent;
 	}
-	
+
+	// ----------------------------------
 	// Actor skeletal mesh and animations
+	// ----------------------------------
 	Mesh = CreateOptionalDefaultSubobject<USkeletalMeshComponent>(ASelectablePawn::MeshComponentName);
 	if (Mesh)
 	{

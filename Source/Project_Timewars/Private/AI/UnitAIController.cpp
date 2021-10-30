@@ -117,13 +117,7 @@ void AUnitAIController::FinishCurrentAction()
 	bool bEndDelegateFired;
 	
 	if (ActionsQueue.Dequeue(CurrentAction))
-	{		
-		bEndDelegateFired = CurrentAction->OnActionEndedDelegate.ExecuteIfBound(PossessedUnit);			
-
-		// Tell Garbage Collector to destroy the used action
-		if (CurrentAction && CurrentAction->IsValidLowLevel())
-			CurrentAction->ConditionalBeginDestroy();
-	}
+		bEndDelegateFired = CurrentAction->OnActionEndedDelegate.ExecuteIfBound(PossessedUnit);
 
 	// If unit is in idle state, it has to stay that way
 	if (CurrentTask == EUnitTask::Idle) return;
